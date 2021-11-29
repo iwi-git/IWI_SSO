@@ -21,7 +21,7 @@ public class AuthController {
 	 * @return
 	 * @throws Exception
 	 */
-	@PostMapping("/signup")
+	@PostMapping("/signin")
 	@ResponseBody
 	public Response signup(@RequestBody IMap body) throws Exception {
 		return new Response(authService.createToken(body));
