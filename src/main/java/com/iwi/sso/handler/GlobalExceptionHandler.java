@@ -14,19 +14,19 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(IException.class)
 	public Response iException(IException e) {
-		e.printStackTrace();
+		//e.printStackTrace();
 		return new Response(false, e.getMessage());
 	}
 
 	@ExceptionHandler(SignatureException.class)
 	public Response signatureException(SignatureException e) {
-		e.printStackTrace();
+		//e.printStackTrace();
 		return new Response(false, "토큰 검증에 실패하였습니다.");
 	}
 
 	@ExceptionHandler(ExpiredJwtException.class)
 	public Response expiredJwtException(ExpiredJwtException e) {
-		e.printStackTrace();
+		//e.printStackTrace();
 		return new Response(false, "인증 만료");
 	}
 
