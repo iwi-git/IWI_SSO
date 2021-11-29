@@ -32,7 +32,7 @@ public class AuthServiceImpl implements AuthService {
 		// 멤버 검증 - email
 		String email = imap.getString("email");
 		if (StringUtils.isEmpty(email)) {
-			System.out.println("####### createToken imap : " + imap);
+			// System.out.println("####### createToken imap : " + imap);
 			throw new Exception("필수 파라미터 누락");
 		} else {
 			if (this.selectUser(imap) == null) {
@@ -75,8 +75,8 @@ public class AuthServiceImpl implements AuthService {
 		resMap.put("acsTime", SystemConst.ACS_TOKEN_VALID_MINUTES);
 		resMap.put("refTime", SystemConst.REF_TOKEN_VALID_MINUTES);
 
-		System.out.println("###### " + TokenUtil.getExpirationDateFromToken(acsToken));
-		System.out.println("###### " + TokenUtil.getExpirationDateFromToken(refToken));
+		// System.out.println("###### " + TokenUtil.getExpirationDateFromToken(acsToken));
+		// System.out.println("###### " + TokenUtil.getExpirationDateFromToken(refToken));
 
 		return resMap;
 	}
@@ -90,7 +90,7 @@ public class AuthServiceImpl implements AuthService {
 		String refToken = imap.getString("refToken");
 
 		if (StringUtils.isEmpty(acsToken) || StringUtils.isEmpty(refToken)) {
-			System.out.println("####### refreshToken imap : " + imap);
+			// System.out.println("####### refreshToken imap : " + imap);
 			throw new Exception("필수 파라미터 누락");
 		}
 
@@ -98,30 +98,30 @@ public class AuthServiceImpl implements AuthService {
 
 		// 엑세스 토큰 검증
 		boolean isAcsExpired = TokenUtil.isTokenExpired(acsToken);
-		System.out.println("###### isAcsExpired : " + isAcsExpired);
+		// System.out.println("###### isAcsExpired : " + isAcsExpired);
 		if (!isAcsExpired) {
-			System.out.println("###### acsExpirationDate : " + TokenUtil.getExpirationDateFromToken(acsToken));
+			// System.out.println("###### acsExpirationDate : " + TokenUtil.getExpirationDateFromToken(acsToken));
 		}
 
 		boolean isRefExpired = TokenUtil.isTokenExpired(refToken);
-		System.out.println("###### isRefExpired : " + isRefExpired);
+		// System.out.println("###### isRefExpired : " + isRefExpired);
 		if (!isRefExpired) {
-			System.out.println("###### refExpirationDate : " + TokenUtil.getExpirationDateFromToken(refToken));
+			// System.out.println("###### refExpirationDate : " + TokenUtil.getExpirationDateFromToken(refToken));
 		}
 
 		if (isRefExpired) {
 			// 리프레쉬 토큰 만료 시 인증 종료, 추가 작업 없음
-			throw new Exception("인증 만료");
+			throw new ExpiredJwtException(null, null, null);
 		} else if (isAcsExpired) {
 			// 엑세스토큰 만료 시 리프레쉬토큰으로 사용자 조회
 			email = this.selectEmailByToken(imap);
-			System.out.println("###### email : " + email);
+			// System.out.println("###### email : " + email);
 
 			// 토큰 DB 교차 검증 성공 시 엑세스 토큰 재발급
 			if (!StringUtils.isEmpty(email)) {
 				acsToken = TokenUtil.createAccessToken(email);
 			} else {
-				throw new Exception("토큰 검증 실패");
+				throw new SignatureException(null);
 			}
 		} else {
 			// TODO : 엑세스토큰 유효시 추가 작업 없이 반환
@@ -159,7 +159,7 @@ public class AuthServiceImpl implements AuthService {
 		String refToken = imap.getString("refToken");
 
 		if (StringUtils.isEmpty(acsToken) || StringUtils.isEmpty(refToken)) {
-			System.out.println("####### validationToken imap : " + imap);
+			// System.out.println("####### validationToken imap : " + imap);
 			throw new IException("필수 파라미터 누락");
 		}
 
@@ -167,11 +167,11 @@ public class AuthServiceImpl implements AuthService {
 
 		// 엑세스 토큰 만료 체크
 		boolean isAcsExpired = TokenUtil.isTokenExpired(acsToken);
-		System.out.println("###### isAcsExpired : " + isAcsExpired);
+		// System.out.println("###### isAcsExpired : " + isAcsExpired);
 
 		// 리프레쉬 토큰 만료 체크
 		boolean isRefExpired = TokenUtil.isTokenExpired(refToken);
-		System.out.println("###### isRefExpired : " + isRefExpired);
+		// System.out.println("###### isRefExpired : " + isRefExpired);
 
 		if (isRefExpired) {
 			// 리프레쉬 토큰 만료
@@ -179,7 +179,7 @@ public class AuthServiceImpl implements AuthService {
 		} else if (isAcsExpired) {
 			// 엑세스토큰 만료 시 리프레쉬토큰으로 사용자 조회
 			email = this.selectEmailByToken(imap);
-			System.out.println("###### email : " + email);
+			// System.out.println("###### email : " + email);
 
 			// 토큰 DB 교차 검증
 			if (StringUtils.isEmpty(email)) {
@@ -197,13 +197,13 @@ public class AuthServiceImpl implements AuthService {
 		String site = imap.getString("site");
 
 		if (StringUtils.isEmpty(acsToken) || StringUtils.isEmpty(site)) {
-			System.out.println("####### getTokenSiteKey imap : " + imap);
+			// System.out.println("####### getTokenSiteKey imap : " + imap);
 			throw new IException("필수 파라미터 누락");
 		}
 
 		// 엑세스 토큰 검증
 		boolean isAcsExpired = TokenUtil.isTokenExpired(acsToken);
-		System.out.println("###### isAcsExpired : " + isAcsExpired);
+		// System.out.println("###### isAcsExpired : " + isAcsExpired);
 
 		String uniqueKey = null;
 
