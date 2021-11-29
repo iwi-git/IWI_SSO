@@ -25,13 +25,13 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(SignatureException.class)
 	public Response signatureException(SignatureException e) {
 		// e.printStackTrace();
-		return new Response(false, "토큰 검증에 실패하였습니다.");
+		return new Response(false, "토큰 검증 실패");
 	}
 
 	@ExceptionHandler(ExpiredJwtException.class)
 	public Response expiredJwtException(ExpiredJwtException e) {
 		// e.printStackTrace();
-		return new Response(false, "인증 만료");
+		return new Response(false, "인증 토큰 만료");
 	}
 
 	@ExceptionHandler(Exception.class)
