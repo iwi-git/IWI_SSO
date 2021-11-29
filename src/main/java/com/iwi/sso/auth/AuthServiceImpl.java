@@ -33,10 +33,10 @@ public class AuthServiceImpl implements AuthService {
 		String email = imap.getString("email");
 		if (StringUtils.isEmpty(email)) {
 			// System.out.println("####### createToken imap : " + imap);
-			throw new Exception("필수 파라미터 누락");
+			throw new IException("필수 파라미터 누락");
 		} else {
 			if (this.selectUser(imap) == null) {
-				throw new Exception("사용자 정보 없음");
+				throw new IException("사용자 정보 없음");
 			}
 		}
 
@@ -91,7 +91,7 @@ public class AuthServiceImpl implements AuthService {
 
 		if (StringUtils.isEmpty(acsToken) || StringUtils.isEmpty(refToken)) {
 			// System.out.println("####### refreshToken imap : " + imap);
-			throw new Exception("필수 파라미터 누락");
+			throw new IException("필수 파라미터 누락");
 		}
 
 		String email = null;
