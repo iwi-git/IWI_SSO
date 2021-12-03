@@ -7,8 +7,8 @@
 		<property name="configLocation" value="/WEB-INF/spring/mybatis-config.xml" />
 		<property name="mapperLocations">
 			<list>
-				<!-- <value>classpath:com/iwi/sso/**/*-Oracle.xml</value> -->
-				<value>classpath:com/iwi/sso/**/*-Mysql.xml</value>
+				<value>classpath:com/iwi/sso/**/*-Oracle.xml</value>
+<!-- 				<value>classpath:com/iwi/sso/**/*-Mysql.xml</value> -->
 			</list>
 		</property>
 	</bean>
