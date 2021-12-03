@@ -21,10 +21,14 @@ public class IMap extends HashMap {
 	public Object put(Object key, Object value) {
 		String keyStr = (String) key;
 		if (keyStr.indexOf("_") >= 0) {
-			// camel case
-			return super.put(JdbcUtils.convertUnderscoreNameToPropertyName((String) key), value);
+			// camel case 적용
+			return super.put(JdbcUtils.convertUnderscoreNameToPropertyName(keyStr), value);
 		} else {
-			return super.put((String) key, value);
+			// 대문자만으로 이루어진 키는 소문자로 변경
+			if (keyStr.matches("^[A-Z]*$")) {
+				keyStr = keyStr.toLowerCase();
+			}
+			return super.put(keyStr, value);
 		}
 	}
 
@@ -38,24 +42,25 @@ public class IMap extends HashMap {
 
 	/**
 	 * 객체 변환 Map > IMap
+	 * 
 	 * @param map
 	 */
 	public IMap(Map<?, ?> map) {
 		this.putMapEntries(map);
 	}
 
-
 	/**
 	 * 객체 변환 HashMap > IMap
+	 * 
 	 * @param map
 	 */
 	public IMap(HashMap<?, ?> map) {
 		this.putMapEntries(map);
 	}
 
-
 	/**
 	 * 객체 변환 IMap > IMap
+	 * 
 	 * @param map
 	 */
 	public IMap(IMap map) {
@@ -64,6 +69,7 @@ public class IMap extends HashMap {
 
 	/**
 	 * List<IMap> 0번째 인덱스만 받음
+	 * 
 	 * @param list
 	 */
 	public IMap(List<IMap> list) {
@@ -75,6 +81,7 @@ public class IMap extends HashMap {
 
 	/**
 	 * String 형태로 반환
+	 * 
 	 * @param key
 	 * @return
 	 */
