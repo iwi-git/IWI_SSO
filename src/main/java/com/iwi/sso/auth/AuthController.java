@@ -15,7 +15,7 @@ public class AuthController {
 	private AuthService authService;
 
 	/**
-	 * 토큰 발급
+	 * SSO 로그인 처리
 	 * 
 	 * @param body
 	 * @return
@@ -23,7 +23,20 @@ public class AuthController {
 	 */
 	@PostMapping("/signin")
 	@ResponseBody
-	public Response signup(@RequestBody IMap body) throws Exception {
+	public Response signin(@RequestBody IMap body) throws Exception {
+		return new Response(authService.signinProc(body));
+	}
+
+	/**
+	 * 토큰 발급
+	 * 
+	 * @param body
+	 * @return
+	 * @throws Exception
+	 */
+	@PostMapping("/auth")
+	@ResponseBody
+	public Response auth(@RequestBody IMap body) throws Exception {
 		return new Response(authService.createToken(body));
 	}
 

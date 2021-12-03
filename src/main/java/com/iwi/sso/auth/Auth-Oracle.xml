@@ -4,33 +4,51 @@
 
 	<select id="selectUser" parameterType="IMap" resultType="IMap">
 		SELECT
-			USER_SEQ,
-			EMAIL
+			A.USER_SEQ,
+			A.EMAIL,
+			A.PASSWORD,
+			A.USER_NO,
+			A.USER_NM,
+			A.USER_TEL,
+			A.USER_HP,
+			A.USER_FAX,
+			A.USER_BIRTH,
+			A.USER_SEX,
+			A.ENTRY_YMD,
+			A.QUIT_YMD,
+			A.POSI_CD,
+			A.DUTY_CD,
+			A.DEPT_CD
 		FROM
-			TB_USER
-		<where>
+			TB_USER A
+		WHERE
+			A.USE_YN = 'Y'
+			AND A.DEL_YN = 'N'
 			<if test='email != null and email != ""'>
-			AND UPPER(EMAIL) = UPPER(#{email})
+			AND UPPER(A.EMAIL) = UPPER(#{email})
 			</if>
-		</where>
 	</select>
 
 	<select id="selectUserRefreshToken" parameterType="IMap" resultType="String">
 		SELECT
-			REF_TOKEN
+			A.REF_TOKEN
 		FROM
-			TB_USER
+			TB_USER A
 		WHERE
-			UPPER(EMAIL) = UPPER(#{email})
+			A.USE_YN = 'Y'
+			AND A.DEL_YN = 'N'
+			AND UPPER(A.EMAIL) = UPPER(#{email})
 	</select>
 
 	<select id="selectEmailByToken" parameterType="IMap" resultType="String">
 		SELECT
-			EMAIL
+			A.EMAIL
 		FROM
-			TB_USER
+			TB_USER A
 		WHERE
-			REF_TOKEN = #{refToken}
+			A.USE_YN = 'Y'
+			AND A.DEL_YN = 'N'
+			AND A.REF_TOKEN = #{refToken}
 	</select>
 	
 	<select id="selectUserSiteKey" parameterType="IMap" resultType="String">
@@ -41,7 +59,9 @@
 		LEFT OUTER JOIN TB_USER_SITE_KEY B ON
 			A.USER_SEQ = B.USER_SEQ
 		WHERE
-			UPPER(A.EMAIL) = UPPER(#{email})
+			A.USE_YN = 'Y'
+			AND A.DEL_YN = 'N'
+			AND UPPER(A.EMAIL) = UPPER(#{email})
 			AND UPPER(B.SITE) = UPPER(#{site})
 	</select>
 	
@@ -49,7 +69,8 @@
 		UPDATE
 			TB_USER
 		SET
-			REF_TOKEN = #{refToken}
+			REF_TOKEN = #{refToken},
+			REF_ISSUE_DT = SYSDATE
 		WHERE
 			UPPER(EMAIL) = UPPER(#{email})
 	</update>

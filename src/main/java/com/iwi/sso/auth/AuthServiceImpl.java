@@ -8,6 +8,7 @@ import com.iwi.sso.common.CommonDao;
 import com.iwi.sso.common.IException;
 import com.iwi.sso.common.IMap;
 import com.iwi.sso.common.SystemConst;
+import com.iwi.sso.util.SecureUtil;
 import com.iwi.sso.util.TokenUtil;
 
 import io.jsonwebtoken.ExpiredJwtException;
@@ -20,6 +21,33 @@ public class AuthServiceImpl implements AuthService {
 	private CommonDao dao;
 
 	private String NAMESPACE = "com.iwi.sso.auth.Auth.";
+
+	@Override
+	public IMap signinProc(IMap imap) throws Exception {
+		if (StringUtils.isEmpty(imap.getString("email"))) {
+			throw new IException("아이디를 입력하세요.");
+		}
+
+		if (StringUtils.isEmpty(imap.getString("password"))) {
+			throw new IException("비밀번호를 입력하세요.");
+		}
+
+		IMap user = this.selectUser(imap);
+		if (user == null) {
+			throw new IException("존재하지 않는 사용자입니다.");
+		}
+
+		System.out.println(user);
+
+		String encPassword = SecureUtil.getEncPassword(imap);
+		String dbPassword = user.getString("password");
+
+		if (!encPassword.equals(dbPassword)) {
+			throw new IException("로그인 정보가 일치하지 않습니다. ");
+		}
+
+		return this.createToken(imap);
+	}
 
 	/**
 	 * 토큰 생성

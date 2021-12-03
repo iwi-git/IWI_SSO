@@ -7,8 +7,8 @@ public class SystemConst {
 	public static final String SECRET_KEY = "IWORKSINTERACTIVE2021"; // 토큰 생성 암호 키
 
 	// SSO TOKEN
-	public static final long ACS_TOKEN_VALID_MINUTES = 1; // 엑세스 토큰 생성 시간 (1분)
-	public static final long REF_TOKEN_VALID_MINUTES = 5; // 리프레쉬 토큰 생성 시간 (5분)
+	public static final long ACS_TOKEN_VALID_MINUTES = 10; // 엑세스 토큰 생성 시간 (10분)
+	public static final long REF_TOKEN_VALID_MINUTES = 60; // 리프레쉬 토큰 생성 시간 (60분)
 
 	// AD Server
 	public static final String AD_SERVER = "LDAP://rainbow.iwi.co.kr:389";
