@@ -1,6 +1,7 @@
 package com.iwi.sso.auth;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +16,19 @@ public class AuthController {
 
 	@Autowired
 	private AuthService authService;
+
+	/**
+	 * SSO 로그인 처리
+	 * 
+	 * @param body
+	 * @return
+	 * @throws Exception
+	 */
+	@PostMapping("/signin")
+	@ResponseBody
+	public Response signin(@RequestBody IMap body, HttpServletResponse response) throws Exception {
+		return new Response(authService.signinProc(body));
+	}
 
 	/**
 	 * 토큰 발급

@@ -1,15 +1,25 @@
 package com.iwi.sso.auth;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.SimpleTimeZone;
+
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.iwi.sso.common.CommonDao;
 import com.iwi.sso.common.IException;
 import com.iwi.sso.common.IMap;
 import com.iwi.sso.common.SystemConst;
+import com.iwi.sso.util.SecureUtil;
 import com.iwi.sso.util.StringUtil;
 import com.iwi.sso.util.TokenUtil;
 
@@ -23,6 +33,65 @@ public class AuthServiceImpl implements AuthService {
 	private CommonDao dao;
 
 	private String NAMESPACE = "com.iwi.sso.auth.Auth.";
+
+	@Override
+	public IMap signinProc(IMap map) throws Exception {
+		if (StringUtils.isEmpty(map.getString("email"))) {
+			throw new IException("아이디를 입력하세요.");
+		}
+
+		if (StringUtils.isEmpty(map.getString("password"))) {
+			throw new IException("비밀번호를 입력하세요.");
+		}
+
+		IMap user = this.selectUser(map);
+		if (user == null) {
+			throw new IException("존재하지 않는 사용자입니다.");
+		}
+
+		System.out.println(user);
+
+		String encPassword = SecureUtil.getEncPassword(map);
+		String dbPassword = user.getString("password");
+
+		if (!encPassword.equals(dbPassword)) {
+			throw new IException("로그인 정보가 일치하지 않습니다. ");
+		}
+
+		IMap resMap = this.createToken(map);
+
+		// ------------------ set cookie 테스트 시작
+
+		DateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", java.util.Locale.US);
+		df.setTimeZone(new SimpleTimeZone(0, "KST"));
+
+		// AuthAop 에서 전달한 requestRefererDomain attribute 수신
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+		String cookieDomain = StringUtil.getDomainInfo(request);
+
+		HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getResponse();
+
+		String setCookie = "";
+		Calendar cal = Calendar.getInstance();
+
+		// 엑세스토큰 + 10분 (분 단위)
+		cal.setTime(new Date());
+		cal.add(Calendar.MINUTE, Long.valueOf(SystemConst.ACS_TOKEN_VALID_MINUTES).intValue() + 10);
+
+		setCookie = "t=" + resMap.getString("acsToken") + "; domain=" + cookieDomain + "; Path=/; Expires=" + df.format(cal.getTime()) + "; HttpOnly; Secure;";
+		response.addHeader("Set-Cookie", setCookie);
+
+		// 리프레시토큰 + 1일 (분 단위)
+		cal.setTime(new Date());
+		cal.add(Calendar.MINUTE, Long.valueOf(SystemConst.REF_TOKEN_VALID_MINUTES).intValue() + (60 * 24));
+
+		setCookie = "t1=" + resMap.getString("refToken") + "; domain=" + cookieDomain + "; Path=/; Expires=" + df.format(cal.getTime()) + "; HttpOnly; Secure;";
+		response.addHeader("Set-Cookie", setCookie);
+
+		// ------------------ set cookie 테스트 끝
+
+		return resMap;
+	}
 
 	/**
 	 * 토큰 생성
