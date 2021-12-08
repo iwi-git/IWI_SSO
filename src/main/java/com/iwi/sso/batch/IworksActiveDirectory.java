@@ -137,7 +137,7 @@ public class IworksActiveDirectory {
 
 		try {
 
-			String searchBase = "dc=iwi,dc=co,dc=kr";
+			String searchBase = "OU=iworks,dc=iwi,dc=co,dc=kr";
 
 			String searchFilter = "";
 			searchFilter += "(&(objectClass=user)";
