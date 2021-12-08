@@ -8,7 +8,6 @@
 		<property name="mapperLocations">
 			<list>
 				<value>classpath:com/iwi/sso/**/*-Oracle.xml</value>
-<!-- 				<value>classpath:com/iwi/sso/**/*-Mysql.xml</value> -->
 			</list>
 		</property>
 	</bean>
