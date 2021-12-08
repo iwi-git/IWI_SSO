@@ -1,5 +1,7 @@
 package com.iwi.sso.auth;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -8,7 +10,7 @@ import com.iwi.sso.common.CommonDao;
 import com.iwi.sso.common.IException;
 import com.iwi.sso.common.IMap;
 import com.iwi.sso.common.SystemConst;
-import com.iwi.sso.util.SecureUtil;
+import com.iwi.sso.util.StringUtil;
 import com.iwi.sso.util.TokenUtil;
 
 import io.jsonwebtoken.ExpiredJwtException;
@@ -22,48 +24,21 @@ public class AuthServiceImpl implements AuthService {
 
 	private String NAMESPACE = "com.iwi.sso.auth.Auth.";
 
-	@Override
-	public IMap signinProc(IMap imap) throws Exception {
-		if (StringUtils.isEmpty(imap.getString("email"))) {
-			throw new IException("아이디를 입력하세요.");
-		}
-
-		if (StringUtils.isEmpty(imap.getString("password"))) {
-			throw new IException("비밀번호를 입력하세요.");
-		}
-
-		IMap user = this.selectUser(imap);
-		if (user == null) {
-			throw new IException("존재하지 않는 사용자입니다.");
-		}
-
-		System.out.println(user);
-
-		String encPassword = SecureUtil.getEncPassword(imap);
-		String dbPassword = user.getString("password");
-
-		if (!encPassword.equals(dbPassword)) {
-			throw new IException("로그인 정보가 일치하지 않습니다. ");
-		}
-
-		return this.createToken(imap);
-	}
-
 	/**
 	 * 토큰 생성
 	 * 
 	 * @throws Exception
 	 */
 	@Override
-	public IMap createToken(IMap imap) throws Exception {
+	public IMap createToken(IMap map) throws Exception {
 
 		// 멤버 검증 - email
-		String email = imap.getString("email");
+		String email = map.getString("email");
 		if (StringUtils.isEmpty(email)) {
-			// System.out.println("####### createToken imap : " + imap);
+			// System.out.println("####### createToken map : " + map);
 			throw new IException("필수 파라미터 누락");
 		} else {
-			if (this.selectUser(imap) == null) {
+			if (this.selectUser(map) == null) {
 				throw new IException("사용자 정보 없음");
 			}
 		}
@@ -74,7 +49,7 @@ public class AuthServiceImpl implements AuthService {
 
 		try {
 			// email - refresh 토큰 조회
-			refToken = this.selectUserRefreshToken(imap);
+			refToken = this.selectUserRefreshToken(map);
 			if (StringUtils.isEmpty(refToken)) {
 				// refresh 토큰 없으면 신규 발급 - DB 저장
 				refToken = TokenUtil.createRefreshToken();
@@ -103,9 +78,6 @@ public class AuthServiceImpl implements AuthService {
 		resMap.put("acsTime", SystemConst.ACS_TOKEN_VALID_MINUTES);
 		resMap.put("refTime", SystemConst.REF_TOKEN_VALID_MINUTES);
 
-		// System.out.println("###### " + TokenUtil.getExpirationDateFromToken(acsToken));
-		// System.out.println("###### " + TokenUtil.getExpirationDateFromToken(refToken));
-
 		return resMap;
 	}
 
@@ -113,60 +85,35 @@ public class AuthServiceImpl implements AuthService {
 	 * 토큰 갱신
 	 */
 	@Override
-	public IMap refreshToken(IMap imap) throws Exception {
-		String acsToken = imap.getString("acsToken");
-		String refToken = imap.getString("refToken");
+	public IMap refreshToken(IMap map) throws Exception {
+		String acsToken = map.getString("acsToken");
+		String refToken = map.getString("refToken");
 
 		if (StringUtils.isEmpty(acsToken) || StringUtils.isEmpty(refToken)) {
-			// System.out.println("####### refreshToken imap : " + imap);
+			// System.out.println("####### refreshToken map : " + map);
 			throw new IException("필수 파라미터 누락");
 		}
 
 		String email = null;
 
-		// 엑세스 토큰 검증
-		boolean isAcsExpired = TokenUtil.isTokenExpired(acsToken);
-		// System.out.println("###### isAcsExpired : " + isAcsExpired);
-		if (!isAcsExpired) {
-			// System.out.println("###### acsExpirationDate : " + TokenUtil.getExpirationDateFromToken(acsToken));
-		}
-
+		// 리프레쉬 토큰 만료 체크
 		boolean isRefExpired = TokenUtil.isTokenExpired(refToken);
-		// System.out.println("###### isRefExpired : " + isRefExpired);
-		if (!isRefExpired) {
-			// System.out.println("###### refExpirationDate : " + TokenUtil.getExpirationDateFromToken(refToken));
-		}
-
 		if (isRefExpired) {
-			// 리프레쉬 토큰 만료 시 인증 종료, 추가 작업 없음
+			// 리프레쉬 토큰 만료 시 인증 종료
 			throw new ExpiredJwtException(null, null, null);
-		} else if (isAcsExpired) {
-			// 엑세스토큰 만료 시 리프레쉬토큰으로 사용자 조회
-			email = this.selectEmailByToken(imap);
+		} else {
+			// 리프레쉬 토큰으로 사용자 조회
+			email = this.selectEmailByToken(map);
 			// System.out.println("###### email : " + email);
 
-			// 토큰 DB 교차 검증 성공 시 엑세스 토큰 재발급
-			if (!StringUtils.isEmpty(email)) {
-				acsToken = TokenUtil.createAccessToken(email);
-			} else {
+			if (StringUtils.isEmpty(email)) {
+				// 토큰 DB 교차 검증 실패 시 오류 반환
 				throw new SignatureException(null);
 			}
-		} else {
-			// TODO : 엑세스토큰 유효시 추가 작업 없이 반환
 
-			// 엑세스토큰에서 email 추출
-			// email = TokenUtil.getSubjectFromToken(acsToken);
-			// System.out.println("###### email : " + email);
-
-			// 엑세스토큰 갱신
-			// acsToken = TokenUtil.createAccessToken(email);
+			// 토큰 DB 교차 검증 성공 시 엑세스 토큰 재발급 (갱신)
+			acsToken = TokenUtil.createAccessToken(email);
 		}
-
-		// 갱신된 토큰 DB 저장
-		IMap userMap = new IMap();
-		userMap.put("email", email);
-		userMap.put("refToken", refToken);
-		this.updateUserRefreshToken(userMap);
 
 		// 토큰 반환
 		IMap resMap = new IMap();
@@ -182,12 +129,12 @@ public class AuthServiceImpl implements AuthService {
 	 * 토큰 검증
 	 */
 	@Override
-	public boolean validationToken(IMap imap) throws Exception {
-		String acsToken = imap.getString("acsToken");
-		String refToken = imap.getString("refToken");
+	public boolean validationToken(IMap map) throws Exception {
+		String acsToken = map.getString("acsToken");
+		String refToken = map.getString("refToken");
 
 		if (StringUtils.isEmpty(acsToken) || StringUtils.isEmpty(refToken)) {
-			// System.out.println("####### validationToken imap : " + imap);
+			// System.out.println("####### validationToken map : " + map);
 			throw new IException("필수 파라미터 누락");
 		}
 
@@ -206,7 +153,7 @@ public class AuthServiceImpl implements AuthService {
 			throw new ExpiredJwtException(null, null, null);
 		} else if (isAcsExpired) {
 			// 엑세스토큰 만료 시 리프레쉬토큰으로 사용자 조회
-			email = this.selectEmailByToken(imap);
+			email = this.selectEmailByToken(map);
 			// System.out.println("###### email : " + email);
 
 			// 토큰 DB 교차 검증
@@ -220,12 +167,12 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	@Override
-	public IMap getTokenSiteKey(IMap imap) throws Exception {
-		String acsToken = imap.getString("acsToken");
-		String site = imap.getString("site");
+	public IMap getTokenSiteKey(IMap map, HttpServletRequest request) throws Exception {
+		String acsToken = map.getString("acsToken");
+		// String site = map.getString("site");
 
-		if (StringUtils.isEmpty(acsToken) || StringUtils.isEmpty(site)) {
-			// System.out.println("####### getTokenSiteKey imap : " + imap);
+		if (StringUtils.isEmpty(acsToken)/* || StringUtils.isEmpty(site) */) {
+			// System.out.println("####### getTokenSiteKey map : " + map);
 			throw new IException("필수 파라미터 누락");
 		}
 
@@ -240,8 +187,21 @@ public class AuthServiceImpl implements AuthService {
 			throw new ExpiredJwtException(null, null, null);
 		} else {
 			// 엑세스토큰에서 email 추출
-			imap.put("email", TokenUtil.getSubjectFromToken(acsToken));
-			uniqueKey = this.selectUserSiteKey(imap);
+			map.put("email", TokenUtil.getSubjectFromToken(acsToken));
+
+			String domain = StringUtil.getDomainInfo(request);
+			if (StringUtils.isEmpty(domain)) {
+				// referer 없음
+				throw new IException("유효하지 않은 요청입니다.");
+			} else {
+				String site = domain.substring(0, domain.indexOf("."));
+				map.put("site", site);
+
+				uniqueKey = this.selectUserSiteKey(map);
+				if (StringUtils.isEmpty(uniqueKey)) {
+					throw new IException("사이트 사용자 키 없음");
+				}
+			}
 		}
 
 		IMap resMap = new IMap();
@@ -250,24 +210,57 @@ public class AuthServiceImpl implements AuthService {
 		return resMap;
 	}
 
-	public IMap selectUser(IMap imap) throws Exception {
-		return (IMap) dao.select(NAMESPACE + "selectUser", imap);
+	public IMap selectUser(IMap map) throws Exception {
+		return (IMap) dao.select(NAMESPACE + "selectUser", map);
 	}
 
-	public String selectUserRefreshToken(IMap imap) throws Exception {
-		return (String) dao.select(NAMESPACE + "selectUserRefreshToken", imap);
+	public String selectUserRefreshToken(IMap map) throws Exception {
+		return (String) dao.select(NAMESPACE + "selectUserRefreshToken", map);
 	}
 
-	public String selectEmailByToken(IMap imap) throws Exception {
-		return (String) dao.select(NAMESPACE + "selectEmailByToken", imap);
+	public String selectEmailByToken(IMap map) throws Exception {
+		return (String) dao.select(NAMESPACE + "selectEmailByToken", map);
 	}
 
-	public String selectUserSiteKey(IMap imap) throws Exception {
-		return (String) dao.select(NAMESPACE + "selectUserSiteKey", imap);
+	public String selectUserSiteKey(IMap map) throws Exception {
+		return (String) dao.select(NAMESPACE + "selectUserSiteKey", map);
 	}
 
-	public void updateUserRefreshToken(IMap imap) throws Exception {
-		dao.update(NAMESPACE + "updateUserRefreshToken", imap);
+	public void updateUserRefreshToken(IMap map) throws Exception {
+		dao.update(NAMESPACE + "updateUserRefreshToken", map);
+	}
+
+	@Override
+	public IMap selectAllowAuthInfo(String authKey, String domain) throws Exception {
+		IMap map = new IMap();
+		map.put("authKey", authKey);
+		map.put("domain", domain);
+		return (IMap) dao.select(NAMESPACE + "selectAllowAuthInfo", map);
+	}
+
+	@Override
+	public void setUserSiteKey(IMap map, HttpServletRequest request) throws Exception {
+		try {
+			// refere, uniqueKey - 서비스별 사용자 번호 merge
+			String uniqueKey = map.getString("uniqueKey");
+			String domain = StringUtil.getDomainInfo(request);
+
+			if (!StringUtils.isEmpty(uniqueKey) && !StringUtils.isEmpty(domain) && domain.toLowerCase().endsWith("iwi.co.kr")) {
+				String site = domain.substring(0, domain.indexOf("."));
+				if (!StringUtils.isEmpty(site)) {
+					map.put("site", site);
+					dao.update(NAMESPACE + "mergeUserSiteKey", map);
+				}
+			}
+		} catch (Exception e) {
+			// 오류 발생 시 작업 무시 후 종료
+		}
+	}
+
+	@Override
+	public void setUserLastLogin(IMap map, HttpServletRequest request) throws Exception {
+		map.put("remoteAddr", request.getRemoteAddr());
+		dao.update(NAMESPACE + "updateUserLastLogin", map);
 	}
 
 }
