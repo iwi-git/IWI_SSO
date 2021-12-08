@@ -10,6 +10,7 @@ import io.jsonwebtoken.SignatureException;
 
 public class TokenUtil {
 
+	// 엑세스 토큰 생성
 	public static String createAccessToken(String subject) {
 		Claims claims = Jwts.claims().setSubject(subject);
 		Date now = new Date();
@@ -21,6 +22,7 @@ public class TokenUtil {
 				.compact();
 	}
 
+	// 리프레쉬 토큰 생성
 	public static String createRefreshToken() {
 		Date now = new Date();
 		return Jwts.builder()
@@ -53,7 +55,7 @@ public class TokenUtil {
 		return (subject.equals(tokenSubject) && !isTokenExpired(token));
 	}
 
-	// 토큰 만료일
+	// 토큰 만료일 반환
 	public static Date getExpirationDateFromToken(String token) throws SignatureException {
 		Claims claims = Jwts.parser().setSigningKey(SystemConst.SECRET_KEY).parseClaimsJws(token).getBody();
 		return claims.getExpiration();
