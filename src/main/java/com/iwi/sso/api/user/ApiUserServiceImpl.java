@@ -1,7 +1,6 @@
 package com.iwi.sso.api.user;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -18,17 +17,16 @@ import com.iwi.sso.common.Response;
 import com.iwi.sso.util.StringUtil;
 
 @Service
-public class UserServiceImpl implements UserService {
+public class ApiUserServiceImpl implements ApiUserService {
 
 	@Autowired
 	private CommonDao dao;
 
-	private String NAMESPACE = "com.iwi.sso.api.user.User.";
+	private String NAMESPACE = "com.iwi.sso.api.user.ApiUser.";
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Response getUserInfo(IMap map) throws Exception {
-		if (map != null && (StringUtils.isEmpty(map.getString("userId")) || StringUtils.isEmpty(map.getString("userNm")))) {
+		if (map != null && (StringUtils.isEmpty(map.getString("id")) || StringUtils.isEmpty(map.getString("name")))) {
 			throw new IException("필수 파라미터 누락");
 		}
 
@@ -67,7 +65,7 @@ public class UserServiceImpl implements UserService {
 		if (!StringUtils.isEmpty(domain) && domain.toLowerCase().endsWith("iwi.co.kr")) {
 			for (Map<String, String> map : list) {
 				IMap imap = new IMap(map);
-				if (!StringUtils.isEmpty(imap.getString("userSeq")) && !StringUtils.isEmpty(imap.getString("email"))) {
+				if (!StringUtils.isEmpty(imap.getString("seq")) && !StringUtils.isEmpty(imap.getString("email"))) {
 					String site = domain.substring(0, domain.indexOf("."));
 
 					List<IMap> userList = this.selectUser(imap);

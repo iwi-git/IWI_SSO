@@ -14,10 +14,10 @@ import com.iwi.sso.common.Response;
 
 @RequestMapping("/api/user")
 @RestController
-public class UserController {
+public class ApiUserController {
 
 	@Autowired
-	private UserService userService;
+	private ApiUserService userService;
 
 	@PostMapping
 	@ResponseBody

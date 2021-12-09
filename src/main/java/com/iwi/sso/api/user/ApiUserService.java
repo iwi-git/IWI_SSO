@@ -5,7 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import com.iwi.sso.common.IMap;
 import com.iwi.sso.common.Response;
 
-public interface UserService {
+public interface ApiUserService {
 
 	public Response getUserInfo(IMap map) throws Exception;
 
