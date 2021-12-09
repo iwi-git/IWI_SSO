@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iwi.sso.aop.Aop">
+
+	<!-- 인증허용정보 조회 -->
+	<select id="selectAllowAuthInfo" parameterType="IMap" resultType="IMap">
+		SELECT
+			A.ALLOW_AUTH_SEQ,
+			A.AUTH_KEY,
+			A.DOMAIN
+		FROM
+			TB_ALLOW_AUTH A
+		WHERE
+			A.USE_YN = 'Y'
+			AND A.DEL_YN = 'N'
+			AND A.AUTH_KEY = #{authKey}
+			AND UPPER(#{domain}) LIKE '%' || UPPER(A.DOMAIN)
+			AND ROWNUM = 1
+	</select>
+
+</mapper>

@@ -8,24 +8,24 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import com.iwi.sso.auth.AuthService;
+import com.iwi.sso.api.auth.AuthService;
 import com.iwi.sso.common.IException;
 import com.iwi.sso.common.IMap;
 import com.iwi.sso.util.StringUtil;
 
 @Aspect
 @Component
-public class AuthAop {
+public class AopApiCommon {
 
 	@Autowired
-	private AuthService authService;
+	private AopService aopService;
 
-	@Pointcut("execution(* com.iwi.sso.auth.AuthController.*(..))")
-	public void authPointcut() {
+	@Pointcut("execution(* com.iwi.sso.api..*Controller.*(..))")
+	public void apiCommonPointcut() {
 	}
 
-	@Before("authPointcut()")
-	public void beforeAuthPointcut() throws Exception {
+	@Before("apiCommonPointcut()")
+	public void beforeApiCommonPointcut() throws Exception {
 		ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
 		HttpServletRequest request = requestAttributes.getRequest();
 
@@ -64,7 +64,7 @@ public class AuthAop {
 			String domain = StringUtil.getDomainInfo(referer);
 
 			// 인증 허용 정보 조회
-			IMap authMap = authService.selectAllowAuthInfo(authKey, domain);
+			IMap authMap = aopService.selectAllowAuthInfo(authKey, domain);
 			if (authMap == null) {
 				throw new IException("유효하지 않은 헤더 정보 입니다.");
 			}
