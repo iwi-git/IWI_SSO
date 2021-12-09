@@ -6,11 +6,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import com.iwi.sso.common.IMap;
 import com.iwi.sso.common.Response;
 
+@RequestMapping("/auth")
 @RestController
 public class AuthController {
 
@@ -37,7 +39,7 @@ public class AuthController {
 	 * @return
 	 * @throws Exception
 	 */
-	@PostMapping("/auth")
+	@PostMapping
 	@ResponseBody
 	public Response auth(@RequestBody IMap body, HttpServletRequest request) throws Exception {
 		Response res = new Response(authService.createToken(body));
@@ -55,7 +57,7 @@ public class AuthController {
 	 * @return
 	 * @throws Exception
 	 */
-	@PostMapping("/auth/refresh")
+	@PostMapping("/refresh")
 	@ResponseBody
 	public Response authRefresh(@RequestBody IMap body) throws Exception {
 		return new Response(authService.refreshToken(body));
@@ -68,7 +70,7 @@ public class AuthController {
 	 * @return
 	 * @throws Exception
 	 */
-	@PostMapping("/auth/valid")
+	@PostMapping("/valid")
 	@ResponseBody
 	public Response authValid(@RequestBody IMap body) throws Exception {
 		return new Response(authService.validationToken(body));
@@ -81,7 +83,7 @@ public class AuthController {
 	 * @return
 	 * @throws Exception
 	 */
-	@PostMapping("/auth/sitekey")
+	@PostMapping("/sitekey")
 	@ResponseBody
 	public Response authSiteKey(@RequestBody IMap body, HttpServletRequest request) throws Exception {
 		return new Response(authService.getTokenSiteKey(body, request));
