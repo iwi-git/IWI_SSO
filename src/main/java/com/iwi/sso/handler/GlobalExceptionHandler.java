@@ -9,6 +9,7 @@ import com.iwi.sso.common.Response;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -20,6 +21,12 @@ public class GlobalExceptionHandler {
 			return this.exception(e);
 		}
 		return new Response(false, e.getMessage());
+	}
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public Response httpMessageNotReadableException(HttpMessageNotReadableException e) {
+		// e.printStackTrace();
+		return new Response(false, "필수 파라미터 누락");
 	}
 
 	@ExceptionHandler(SignatureException.class)
