@@ -73,9 +73,13 @@ public class IMap extends HashMap {
 	 * @param list
 	 */
 	public IMap(List<IMap> list) {
-		if (list != null && list.size() > 0) {
-			IMap map = list.get(0);
-			this.putMapEntries(map);
+		try {
+			if (list != null && list.size() > 0) {
+				IMap map = list.get(0);
+				this.putMapEntries(map);
+			}
+		} catch (Exception e) {
+			// do nothing
 		}
 	}
 
