@@ -20,19 +20,6 @@ public class AuthController {
 	private AuthService authService;
 
 	/**
-	 * SSO 로그인 처리
-	 * 
-	 * @param body
-	 * @return
-	 * @throws Exception
-	 */
-	@PostMapping("/signin")
-	@ResponseBody
-	public Response signin(@RequestBody IMap body, HttpServletResponse response) throws Exception {
-		return new Response(authService.signinProc(body));
-	}
-
-	/**
 	 * 토큰 발급
 	 * 
 	 * @param body
@@ -87,6 +74,19 @@ public class AuthController {
 	@ResponseBody
 	public Response authSiteKey(@RequestBody IMap body, HttpServletRequest request) throws Exception {
 		return new Response(authService.getTokenSiteKey(body, request));
+	}
+
+	/**
+	 * SSO 로그인 처리
+	 * 
+	 * @param body
+	 * @return
+	 * @throws Exception
+	 */
+	@PostMapping("/signin")
+	@ResponseBody
+	public Response signin(@RequestBody IMap body, HttpServletResponse response) throws Exception {
+		return new Response(authService.signinProc(body));
 	}
 
 }

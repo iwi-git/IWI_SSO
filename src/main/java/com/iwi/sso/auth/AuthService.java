@@ -6,8 +6,6 @@ import com.iwi.sso.common.IMap;
 
 public interface AuthService {
 
-	public IMap signinProc(IMap map) throws Exception;
-
 	public IMap createToken(IMap map) throws Exception;
 
 	public IMap refreshToken(IMap map) throws Exception;
@@ -19,5 +17,7 @@ public interface AuthService {
 	public void setUserSiteKey(IMap map, HttpServletRequest request) throws Exception;
 
 	public void setUserLastLogin(IMap map, HttpServletRequest request) throws Exception;
+
+	public IMap signinProc(IMap map) throws Exception;
 
 }

@@ -34,71 +34,6 @@ public class AuthServiceImpl implements AuthService {
 
 	private String NAMESPACE = "com.iwi.sso.auth.Auth.";
 
-	@Override
-	public IMap signinProc(IMap map) throws Exception {
-		if (StringUtils.isEmpty(map.getString("email"))) {
-			throw new IException("아이디를 입력하세요.");
-		}
-
-		if (StringUtils.isEmpty(map.getString("password"))) {
-			throw new IException("비밀번호를 입력하세요.");
-		}
-
-		IMap user = this.selectUser(map);
-		if (user == null) {
-			throw new IException("존재하지 않는 사용자입니다.");
-		}
-
-		System.out.println(user);
-
-		String encPassword = SecureUtil.getEncPassword(map);
-		String dbPassword = user.getString("password");
-
-		if (!encPassword.equals(dbPassword)) {
-			throw new IException("로그인 정보가 일치하지 않습니다. ");
-		}
-
-		IMap resMap = this.createToken(map);
-
-		// ------------------ set cookie 테스트 시작
-
-		DateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", java.util.Locale.US);
-		df.setTimeZone(new SimpleTimeZone(0, "KST"));
-
-		// AuthAop 에서 전달한 requestRefererDomain attribute 수신
-		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-		String cookieDomain = (String) request.getAttribute("authAllowDomain");
-
-		if (!StringUtils.isEmpty(cookieDomain)) {
-
-			HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getResponse();
-
-			String setCookie = "";
-			Calendar cal = Calendar.getInstance();
-
-			// 엑세스토큰 + 10분 (분 단위)
-			cal.setTime(new Date());
-			cal.add(Calendar.MINUTE, Long.valueOf(SystemConst.ACS_TOKEN_VALID_MINUTES).intValue() + 10);
-
-			setCookie = "t=" + resMap.getString("acsToken") + "; domain=" + cookieDomain + "; Path=/; Expires=" + df.format(cal.getTime()) + "; HttpOnly;";
-			System.out.println(setCookie);
-			response.addHeader("Set-Cookie", setCookie);
-
-			// 리프레시토큰 + 1일 (분 단위)
-			cal.setTime(new Date());
-			cal.add(Calendar.MINUTE, Long.valueOf(SystemConst.REF_TOKEN_VALID_MINUTES).intValue() + (60 * 24));
-
-			setCookie = "t1=" + resMap.getString("refToken") + "; domain=" + cookieDomain + "; Path=/; Expires=" + df.format(cal.getTime()) + "; HttpOnly;";
-			System.out.println(setCookie);
-			response.addHeader("Set-Cookie", setCookie);
-
-		}
-
-		// ------------------ set cookie 테스트 끝
-
-		return resMap;
-	}
-
 	/**
 	 * 토큰 생성
 	 * 
@@ -328,6 +263,71 @@ public class AuthServiceImpl implements AuthService {
 	public void setUserLastLogin(IMap map, HttpServletRequest request) throws Exception {
 		map.put("remoteAddr", request.getRemoteAddr());
 		dao.update(NAMESPACE + "updateUserLastLogin", map);
+	}
+
+	@Override
+	public IMap signinProc(IMap map) throws Exception {
+		if (StringUtils.isEmpty(map.getString("email"))) {
+			throw new IException("이메일을 입력하세요.");
+		}
+
+		if (StringUtils.isEmpty(map.getString("password"))) {
+			throw new IException("비밀번호를 입력하세요.");
+		}
+
+		IMap user = this.selectUser(map);
+		if (user == null) {
+			throw new IException("존재하지 않는 사용자입니다.");
+		}
+
+		System.out.println(user);
+
+		String encPassword = SecureUtil.getEncPassword(map);
+		String dbPassword = user.getString("password");
+
+		if (!encPassword.equals(dbPassword)) {
+			throw new IException("로그인 정보가 일치하지 않습니다. ");
+		}
+
+		IMap resMap = this.createToken(map);
+
+		// ------------------ set cookie 테스트 시작
+
+		DateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", java.util.Locale.US);
+		df.setTimeZone(new SimpleTimeZone(0, "KST"));
+
+		// AuthAop 에서 전달한 requestRefererDomain attribute 수신
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+		String cookieDomain = (String) request.getAttribute("authAllowDomain");
+
+		if (!StringUtils.isEmpty(cookieDomain)) {
+
+			HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getResponse();
+
+			String setCookie = "";
+			Calendar cal = Calendar.getInstance();
+
+			// 엑세스토큰 + 10분 (분 단위)
+			cal.setTime(new Date());
+			cal.add(Calendar.MINUTE, Long.valueOf(SystemConst.ACS_TOKEN_VALID_MINUTES).intValue() + 10);
+
+			setCookie = "t=" + resMap.getString("acsToken") + "; domain=" + cookieDomain + "; Path=/; Expires=" + df.format(cal.getTime()) + "; HttpOnly;";
+			System.out.println(setCookie);
+			response.addHeader("Set-Cookie", setCookie);
+
+			// 리프레시토큰 + 1일 (분 단위)
+			cal.setTime(new Date());
+			cal.add(Calendar.MINUTE, Long.valueOf(SystemConst.REF_TOKEN_VALID_MINUTES).intValue() + (60 * 24));
+
+			setCookie = "t1=" + resMap.getString("refToken") + "; domain=" + cookieDomain + "; Path=/; Expires=" + df.format(cal.getTime()) + "; HttpOnly;";
+			System.out.println(setCookie);
+			response.addHeader("Set-Cookie", setCookie);
+
+		}
+
+		// ------------------ set cookie 테스트 끝
+
+		return resMap;
 	}
 
 }
