@@ -29,7 +29,7 @@
 		var fnLogin = function() {
 			$.ajax({
 				method : "post",
-				url : "http://b.iwi.co.kr:9000/signin",
+				url : "http://b.iwi.co.kr:9000/auth/signin",
 				data : $("#frmLogin").getJsonStr(),
 				beforeSend : function(xhr) {
 					xhr.setRequestHeader("Content-type", "application/json");
