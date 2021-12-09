@@ -14,6 +14,10 @@ public class Response {
 	public Response() {
 	}
 
+	public Response(boolean s) {
+		this(false, null, null);
+	}
+
 	public Response(Object d) {
 		this(true, null, d);
 	}
