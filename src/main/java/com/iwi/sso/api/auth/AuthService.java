@@ -1,4 +1,4 @@
-package com.iwi.sso.auth;
+package com.iwi.sso.api.auth;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -15,8 +15,6 @@ public interface AuthService {
 	public boolean validationToken(IMap map) throws Exception;
 
 	public IMap getTokenSiteKey(IMap map, HttpServletRequest request) throws Exception;
-
-	public IMap selectAllowAuthInfo(String authKey, String domain) throws Exception;
 
 	public void setUserSiteKey(IMap map, HttpServletRequest request) throws Exception;
 

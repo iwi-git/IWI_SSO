@@ -1,4 +1,4 @@
-package com.iwi.sso.auth;
+package com.iwi.sso.api.auth;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

@@ -1,4 +1,4 @@
-package com.iwi.sso.auth;
+package com.iwi.sso.api.auth;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -78,14 +78,16 @@ public class AuthServiceImpl implements AuthService {
 		cal.setTime(new Date());
 		cal.add(Calendar.MINUTE, Long.valueOf(SystemConst.ACS_TOKEN_VALID_MINUTES).intValue() + 10);
 
-		setCookie = "t=" + resMap.getString("acsToken") + "; domain=" + cookieDomain + "; Path=/; Expires=" + df.format(cal.getTime()) + "; HttpOnly; Secure;";
+		setCookie = "t=" + resMap.getString("acsToken") + "; domain=iwi.co.kr; Path=/; Expires=" + df.format(cal.getTime()) + "; HttpOnly;";
+		System.out.println(setCookie);
 		response.addHeader("Set-Cookie", setCookie);
 
 		// 리프레시토큰 + 1일 (분 단위)
 		cal.setTime(new Date());
 		cal.add(Calendar.MINUTE, Long.valueOf(SystemConst.REF_TOKEN_VALID_MINUTES).intValue() + (60 * 24));
 
-		setCookie = "t1=" + resMap.getString("refToken") + "; domain=" + cookieDomain + "; Path=/; Expires=" + df.format(cal.getTime()) + "; HttpOnly; Secure;";
+		setCookie = "t1=" + resMap.getString("refToken") + "; domain=iwi.co.kr; Path=/; Expires=" + df.format(cal.getTime()) + "; HttpOnly;";
+		System.out.println(setCookie);
 		response.addHeader("Set-Cookie", setCookie);
 
 		// ------------------ set cookie 테스트 끝
@@ -297,14 +299,6 @@ public class AuthServiceImpl implements AuthService {
 
 	public void updateUserRefreshToken(IMap map) throws Exception {
 		dao.update(NAMESPACE + "updateUserRefreshToken", map);
-	}
-
-	@Override
-	public IMap selectAllowAuthInfo(String authKey, String domain) throws Exception {
-		IMap map = new IMap();
-		map.put("authKey", authKey);
-		map.put("domain", domain);
-		return (IMap) dao.select(NAMESPACE + "selectAllowAuthInfo", map);
 	}
 
 	@Override
