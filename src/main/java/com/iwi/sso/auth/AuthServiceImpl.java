@@ -1,4 +1,4 @@
-package com.iwi.sso.api.auth;
+package com.iwi.sso.auth;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -67,28 +67,32 @@ public class AuthServiceImpl implements AuthService {
 
 		// AuthAop 에서 전달한 requestRefererDomain attribute 수신
 		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-		String cookieDomain = StringUtil.getDomainInfo(request);
+		String cookieDomain = (String) request.getAttribute("authAllowDomain");
 
-		HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getResponse();
+		if (!StringUtils.isEmpty(cookieDomain)) {
 
-		String setCookie = "";
-		Calendar cal = Calendar.getInstance();
+			HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getResponse();
 
-		// 엑세스토큰 + 10분 (분 단위)
-		cal.setTime(new Date());
-		cal.add(Calendar.MINUTE, Long.valueOf(SystemConst.ACS_TOKEN_VALID_MINUTES).intValue() + 10);
+			String setCookie = "";
+			Calendar cal = Calendar.getInstance();
 
-		setCookie = "t=" + resMap.getString("acsToken") + "; domain=iwi.co.kr; Path=/; Expires=" + df.format(cal.getTime()) + "; HttpOnly;";
-		System.out.println(setCookie);
-		response.addHeader("Set-Cookie", setCookie);
+			// 엑세스토큰 + 10분 (분 단위)
+			cal.setTime(new Date());
+			cal.add(Calendar.MINUTE, Long.valueOf(SystemConst.ACS_TOKEN_VALID_MINUTES).intValue() + 10);
 
-		// 리프레시토큰 + 1일 (분 단위)
-		cal.setTime(new Date());
-		cal.add(Calendar.MINUTE, Long.valueOf(SystemConst.REF_TOKEN_VALID_MINUTES).intValue() + (60 * 24));
+			setCookie = "t=" + resMap.getString("acsToken") + "; domain=" + cookieDomain + "; Path=/; Expires=" + df.format(cal.getTime()) + "; HttpOnly;";
+			System.out.println(setCookie);
+			response.addHeader("Set-Cookie", setCookie);
 
-		setCookie = "t1=" + resMap.getString("refToken") + "; domain=iwi.co.kr; Path=/; Expires=" + df.format(cal.getTime()) + "; HttpOnly;";
-		System.out.println(setCookie);
-		response.addHeader("Set-Cookie", setCookie);
+			// 리프레시토큰 + 1일 (분 단위)
+			cal.setTime(new Date());
+			cal.add(Calendar.MINUTE, Long.valueOf(SystemConst.REF_TOKEN_VALID_MINUTES).intValue() + (60 * 24));
+
+			setCookie = "t1=" + resMap.getString("refToken") + "; domain=" + cookieDomain + "; Path=/; Expires=" + df.format(cal.getTime()) + "; HttpOnly;";
+			System.out.println(setCookie);
+			response.addHeader("Set-Cookie", setCookie);
+
+		}
 
 		// ------------------ set cookie 테스트 끝
 
