@@ -8,19 +8,18 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import com.iwi.sso.api.auth.AuthService;
 import com.iwi.sso.common.IException;
 import com.iwi.sso.common.IMap;
 import com.iwi.sso.util.StringUtil;
 
 @Aspect
 @Component
-public class AopApiCommon {
+public class AopAuth {
 
 	@Autowired
 	private AopService aopService;
 
-	@Pointcut("execution(* com.iwi.sso.api..*Controller.*(..))")
+	@Pointcut("execution(* com.iwi.sso.auth.*Controller.*(..))")
 	public void apiCommonPointcut() {
 	}
 
@@ -49,11 +48,6 @@ public class AopApiCommon {
 		} else {
 			authKey = authKey.replace("Bearer ", "");
 
-			// 20211207 DB 교차 검증 방식으로 변경됨
-			// if (!authKey.equals(SystemConst.API_KEY)) {
-			// throw new IException("유효하지 않은 헤더 정보 입니다.");
-			// }
-
 			// refere 체크
 			String referer = request.getHeader("referer");
 			if (StringUtils.isEmpty(referer)) {
@@ -68,6 +62,9 @@ public class AopApiCommon {
 			if (authMap == null) {
 				throw new IException("유효하지 않은 헤더 정보 입니다.");
 			}
+
+			// request 에 인증 허용 도메인 추가
+			request.setAttribute("authAllowDomain", authMap.getString("domain"));
 		}
 	}
 
