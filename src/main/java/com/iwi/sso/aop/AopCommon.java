@@ -14,17 +14,32 @@ import com.iwi.sso.util.StringUtil;
 
 @Aspect
 @Component
-public class AopAuth {
+public class AopCommon {
 
 	@Autowired
 	private AopService aopService;
 
+	/**
+	 * Auth AOP
+	 */
 	@Pointcut("execution(* com.iwi.sso.auth.*Controller.*(..))")
-	public void apiCommonPointcut() {
+	public void authPointcut() {
 	}
 
-	@Before("apiCommonPointcut()")
-	public void beforeApiCommonPointcut() throws Exception {
+	/**
+	 * Api AOP
+	 */
+	@Pointcut("execution(* com.iwi.sso.api..*Controller.*(..))")
+	public void apiPointcut() {
+	}
+
+	/**
+	 * 인증 체크
+	 * 
+	 * @throws Exception
+	 */
+	@Before("authPointcut() || apiPointcut()")
+	public void checkAuthorization() throws Exception {
 		ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
 		HttpServletRequest request = requestAttributes.getRequest();
 
