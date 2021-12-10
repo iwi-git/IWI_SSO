@@ -47,10 +47,9 @@ public class ApiUserServiceImpl implements ApiUserService {
 	public Response setUserLink(Object obj, HttpServletRequest request) throws Exception {
 		List<Map<String, String>> list = null;
 
-		String objType = obj.getClass().getSimpleName();
-		if ("ArrayList".equals(objType)) {
+		if (obj instanceof List) {
 			list = (List<Map<String, String>>) obj;
-		} else if ("LinkedHashMap".equals(objType)) {
+		} else if (obj instanceof Map) {
 			list = new ArrayList<Map<String, String>>();
 			list.add((Map<String, String>) obj);
 		}
@@ -59,26 +58,33 @@ public class ApiUserServiceImpl implements ApiUserService {
 			throw new IException("유효하지 않은 요청입니다.");
 		}
 
-		int cnt = 0;
+		int resCnt = 0;
 
 		String domain = StringUtil.getDomainInfo(request);
-		if (!StringUtils.isEmpty(domain) && domain.toLowerCase().endsWith("iwi.co.kr")) {
+		String allowDomain = (String) request.getAttribute("authAllowDomain");
+
+		if (!StringUtils.isEmpty(domain) && domain.toLowerCase().endsWith(allowDomain)) {
 			for (Map<String, String> map : list) {
 				IMap imap = new IMap(map);
 				if (!StringUtils.isEmpty(imap.getString("seq")) && !StringUtils.isEmpty(imap.getString("email"))) {
-					String site = domain.substring(0, domain.indexOf("."));
+					String site = domain;
+					if (domain.indexOf(".") >= 0) {
+						site = domain.substring(0, domain.indexOf("."));
+					}
 
 					List<IMap> userList = this.selectUser(imap);
 					if (userList != null && userList.size() > 0) {
 						imap.put("site", site);
 						dao.update(NAMESPACE + "mergeUserSiteKey", imap);
-						cnt++;
+						resCnt++;
 					}
 				}
 			}
+		} else {
+			throw new IException("유효하지 않은 헤더 정보 입니다.");
 		}
 
-		return new Response(cnt);
+		return new Response(resCnt);
 	}
 
 	@SuppressWarnings("unchecked")
