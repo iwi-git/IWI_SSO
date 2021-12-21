@@ -1,5 +1,8 @@
 package com.iwi.sso.handler;
 
+import javax.naming.AuthenticationException;
+import javax.naming.NamingException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -39,6 +42,36 @@ public class GlobalExceptionHandler {
 	public Response expiredJwtException(ExpiredJwtException e) {
 		// e.printStackTrace();
 		return new Response(false, "인증 토큰 만료");
+	}
+
+	@ExceptionHandler(AuthenticationException.class)
+	public Response authenticationException(AuthenticationException e) {
+		e.printStackTrace();
+
+		String errorMessage = e.getMessage();
+		String responseMessage = "LDAP 처리 중 오류가 발생하였습니다.\\n관리자에게 문의해주세요.";
+
+		if (errorMessage.indexOf("data 525") > 0) {
+			responseMessage = "LDAP 사용자를 찾을 수 없습니다.";
+		} else if (errorMessage.indexOf("data 52e") > 0) {
+			responseMessage = "LDAP 비밀번호가 일치하지 않습니다.";
+		} else if (errorMessage.indexOf("data 532") > 0) {
+			responseMessage = "LDAP 암호가 만료되었습니다.";
+		} else if (errorMessage.indexOf("data 533") > 0) {
+			responseMessage = "LDAP 비활성화된 계정입니다.";
+		} else if (errorMessage.indexOf("data 701") > 0) {
+			responseMessage = "LDAP 계정이 만료되었습니다.";
+		} else if (errorMessage.indexOf("data 773") > 0) {
+			responseMessage = "LDAP 계정 비밀번호가 만료되었습니다.";
+		}
+
+		return new Response(false, responseMessage);
+	}
+
+	@ExceptionHandler(NamingException.class)
+	public Response namingException(NamingException e) {
+		e.printStackTrace();
+		return new Response(false, "LDAP 처리 중 오류가 발생하였습니다.\n관리자에게 문의해주세요.");
 	}
 
 	@ExceptionHandler(Exception.class)

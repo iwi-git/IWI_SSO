@@ -17,5 +17,36 @@
 			AND UPPER(#{domain}) LIKE '%' || UPPER(A.DOMAIN)
 			AND ROWNUM = 1
 	</select>
+	
+	<insert id="insertApiAccessLog" parameterType="IMap">
+		INSERT INTO TB_API_ACCESS_LOG (
+			ACC_SEQ,
+			ACC_YMD,
+			ACC_HMS,
+			ACC_URL,
+			ACC_IP,
+			AUTHORIZATION,
+			CONTENT_TYPE,
+			USER_AGENT,
+			REFERER,
+			REQ_BODY_JSON,
+			REQ_PARAM_JSON,
+			REG_DT
+		) VALUES (
+			SEQ_ACC_SEQ.NEXTVAL,
+			TO_CHAR(SYSDATE, 'YYYYMMDD'),
+			TO_CHAR(SYSDATE, 'HH24MISS'),
+			#{accUrl},
+			#{accIp},
+			#{authorization},
+			#{contentType},
+			#{userAgent},
+			#{referer},
+			#{reqBodyJson},
+			#{reqParamJson},
+			SYSDATE
+		)
+
+	</insert>
 
 </mapper>

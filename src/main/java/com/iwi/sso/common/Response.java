@@ -15,7 +15,7 @@ public class Response {
 	}
 
 	public Response(boolean s) {
-		this(false, null, null);
+		this(s, null, null);
 	}
 
 	public Response(Object d) {

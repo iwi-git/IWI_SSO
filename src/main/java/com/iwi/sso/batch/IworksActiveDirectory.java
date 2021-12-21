@@ -13,6 +13,7 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
@@ -26,9 +27,8 @@ import com.iwi.sso.common.SystemConst;
 
 public class IworksActiveDirectory {
 
-	protected static String RETURNED_ATTS[] = { "distinguishedName", "displayName", "sn", "givenName", "cn", "name",
-			"co", "st", "l", "streetAddress", "c", "postalCode", "mobile", "facsimileTelephoneNumber", "title",
-			"company", "department", "userPrincipalName" };
+	protected static String RETURNED_ATTS[] = { "distinguishedName", "displayName", "sn", "givenName", "cn", "name", "co", "st", "l", "streetAddress", "c", "postalCode", "mobile",
+			"facsimileTelephoneNumber", "title", "company", "department", "userPrincipalName" };
 
 	public static void main(String[] args) {
 
@@ -38,9 +38,16 @@ public class IworksActiveDirectory {
 
 			String accountName = "kjg";
 
-			getAccountInfo(ctx, accountName);
+			List<Map<String, Object>> list = getAccountInfo(ctx, accountName);
+			answerPrint(list);
 
-//			onlyOneChangeData(ctx, accountName, "title", "대리");
+			// onlyOneChangeData(ctx, accountName, "logonCount", "1551");
+
+			// add/modify - merge
+			ModificationItem[] modifyitems = new ModificationItem[1];
+			Attribute mod = new BasicAttribute("department", "개발1팀");
+			modifyitems[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, mod);
+			ctx.modifyAttributes("CN=김 정기,OU=iworks,DC=iwi,DC=co,DC=kr", modifyitems);
 
 		} catch (NamingException e) {
 			e.printStackTrace();
@@ -49,8 +56,7 @@ public class IworksActiveDirectory {
 	}
 
 	/**
-	 * 단건 프로필 변경 oldData is not null and newData is not null -> 변경 oldData is not
-	 * null and newData is null -> 신규 oldData is null and newData is not null -> 삭제
+	 * 단건 프로필 변경 oldData is not null and newData is not null -> 변경 oldData is not null and newData is null -> 신규 oldData is null and newData is not null -> 삭제
 	 * 
 	 * @param ctx
 	 * @param accountName
@@ -63,8 +69,7 @@ public class IworksActiveDirectory {
 
 			String paramString = accountInfoGetReturnAttrData(ctx, accountName, "distinguishedName");
 
-			ModificationItem[] paramArrayOfModificationItem = setModifiItem(attr,
-					accountInfoGetReturnAttrData(ctx, accountName, attr), newData);
+			ModificationItem[] paramArrayOfModificationItem = setModifiItem(attr, accountInfoGetReturnAttrData(ctx, accountName, attr), newData);
 
 			ctx.modifyAttributes(paramString, paramArrayOfModificationItem);
 
@@ -83,12 +88,12 @@ public class IworksActiveDirectory {
 	 */
 	private static String accountInfoGetReturnAttrData(LdapContext ctx, String accountName, String returnAttr) {
 
-		List<Map> accInfo = getAccountInfo(ctx, accountName);
+		List<Map<String, Object>> accInfo = getAccountInfo(ctx, accountName);
 
 		String attrData = "";
 
 		if (accInfo != null) {
-			Map accMap = accInfo.get(0);
+			Map<String, Object> accMap = accInfo.get(0);
 			attrData = (String) accMap.get(returnAttr);
 		}
 
@@ -129,11 +134,20 @@ public class IworksActiveDirectory {
 	 * 계정정보 조회
 	 * 
 	 * @param ctx
+	 */
+	private static List<Map<String, Object>> getAccountInfo(LdapContext ctx) {
+		return getAccountInfo(ctx, null);
+	}
+
+	/**
+	 * 계정정보 조회
+	 * 
+	 * @param ctx
 	 * @param accountName
 	 */
-	private static List<Map> getAccountInfo(LdapContext ctx, String accountName) {
+	private static List<Map<String, Object>> getAccountInfo(LdapContext ctx, String email) {
 
-		List<Map> list = new ArrayList<Map>();
+		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 
 		try {
 
@@ -141,18 +155,18 @@ public class IworksActiveDirectory {
 
 			String searchFilter = "";
 			searchFilter += "(&(objectClass=user)";
-			if (!StringUtils.isEmpty(accountName)) {
-				searchFilter += "(sAMAccountName=" + accountName + ")";
+			if (!StringUtils.isEmpty(email)) {
+				searchFilter += "(userPrincipalName=" + email + ")";
 			}
 			searchFilter += ")";
 
 			SearchControls searchCtls = new SearchControls();
-//			searchCtls.setReturningAttributes(RETURNED_ATTS);
+			// searchCtls.setReturningAttributes(RETURNED_ATTS);
 			searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
-			NamingEnumeration answer = ctx.search(searchBase, searchFilter, searchCtls);
+			NamingEnumeration<SearchResult> answer = ctx.search(searchBase, searchFilter, searchCtls);
 
-			list = getAnswer(answer);
+			list = getList(answer);
 
 		} catch (AuthenticationException e) {
 			exceptionMessage(e.getMessage());
@@ -189,32 +203,27 @@ public class IworksActiveDirectory {
 	 * @return
 	 * @throws Exception
 	 */
-	private static List<Map> getAnswer(NamingEnumeration answer) throws Exception {
+	private static List<Map<String, Object>> getList(NamingEnumeration<SearchResult> answer) throws Exception {
 
-		List<Map> list = new ArrayList<Map>();
+		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 
 		while (answer.hasMoreElements()) {
-
-			SearchResult sr = (SearchResult) answer.next();
+			SearchResult sr = answer.next();
 			Attributes attrs = sr.getAttributes();
-			Map amap = null;
+			Map<String, Object> amap = null;
 
 			if (attrs != null) {
-
-				amap = new HashMap();
-				NamingEnumeration ne = attrs.getAll();
-
+				amap = new HashMap<String, Object>();
+				NamingEnumeration<? extends Attribute> ne = attrs.getAll();
 				while (ne.hasMore()) {
-
 					Attribute attr = (Attribute) ne.next();
 					amap.put(attr.getID(), attr.get());
 				}
-
 				list.add(amap);
 				ne.close();
 			}
 		}
-		answerPrint(list);
+		// answerPrint(list);
 
 		return list;
 	}
@@ -224,11 +233,11 @@ public class IworksActiveDirectory {
 	 * 
 	 * @param list
 	 */
-	private static void answerPrint(List<Map> list) {
+	private static void answerPrint(List<Map<String, Object>> list) {
 
 		System.out.println("################################ AD DATA ################################");
 
-		for (Map map : list) {
+		for (Map<String, Object> map : list) {
 			map.forEach((key, value) -> System.out.println("##[key] : " + key + ", [value] : " + value));
 		}
 

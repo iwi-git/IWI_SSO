@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.iwi.sso.api.user.ApiUser">
+<mapper namespace="com.iwi.sso.user.User">
 
 	<!-- 사용자 정보 조회 -->
 	<select id="selectUser" parameterType="IMap" resultType="IMap">
@@ -15,22 +15,20 @@
 			A.USER_SEX AS SEX,
 			A.ENTRY_YMD AS ENTRY_DT,
 			A.QUIT_YMD AS QUIT_DT,
-			FN_GET_POSI_NM(A.POSI_CD) AS POSI,
-			FN_GET_DUTY_NM(A.DUTY_CD) AS DUTY,
-			FN_GET_DEPT_NM(A.DEPT_CD) AS DEPT
+			FN_GET_COMP_NM(A.COMP_CD) AS COMP,
+			FN_GET_POSI_NM(A.COMP_CD, A.POSI_CD) AS POSI,
+			FN_GET_DUTY_NM(A.COMP_CD, A.DUTY_CD) AS DUTY,
+			FN_GET_DEPT_NM(A.COMP_CD, A.DEPT_CD) AS DEPT
 		FROM
 			TB_USER A
 		WHERE
 			A.USE_YN = 'Y'
 			AND A.DEL_YN = 'N'
-			<if test='id != null and id != ""'>
-			AND UPPER(A.EMAIL) = UPPER(#{id} || '@iwi.co.kr')
+			<if test='email != null and email != ""'>
+			AND UPPER(A.EMAIL) = UPPER(#{email})
 			</if>
 			<if test='name  != null and name  != ""'>
 			AND UPPER(A.USER_NM) = UPPER(#{name})
-			</if>
-			<if test='email != null and email != ""'>
-			AND UPPER(A.EMAIL) = UPPER(#{email})
 			</if>
 		ORDER BY
 			A.USER_SEQ DESC
@@ -47,7 +45,7 @@
 			)
 		WHEN MATCHED THEN
 			UPDATE SET
-				UNIQUE_KEY = #{seq}
+				UNIQUE_KEY = #{uniqueKey}
 		WHEN NOT MATCHED THEN
 			INSERT (
 				USER_SEQ,
@@ -56,7 +54,7 @@
 			) VALUES (
 				(SELECT MAX(USER_SEQ) FROM TB_USER WHERE UPPER(EMAIL) = UPPER(#{email})),
 				UPPER(#{site}),
-				#{seq}
+				#{uniqueKey}
 			)
 	</update>
 

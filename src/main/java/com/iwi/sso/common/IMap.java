@@ -83,6 +83,10 @@ public class IMap extends HashMap {
 		}
 	}
 
+	public IMap(String key, Object value) {
+		this.put(key, value);
+	}
+
 	/**
 	 * String 형태로 반환
 	 * 

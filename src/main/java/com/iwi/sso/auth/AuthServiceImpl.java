@@ -280,8 +280,6 @@ public class AuthServiceImpl implements AuthService {
 			throw new IException("존재하지 않는 사용자입니다.");
 		}
 
-		System.out.println(user);
-
 		String encPassword = SecureUtil.getEncPassword(map);
 		String dbPassword = user.getString("password");
 

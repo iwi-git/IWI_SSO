@@ -6,4 +6,5 @@ public interface AopService {
 
 	public IMap selectAllowAuthInfo(String authKey, String domain) throws Exception;
 
+	public void insertApiAccessLog(IMap map) throws Exception;
 }

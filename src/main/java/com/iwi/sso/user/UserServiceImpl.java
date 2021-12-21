@@ -1,4 +1,4 @@
-package com.iwi.sso.api.user;
+package com.iwi.sso.user;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,20 +14,30 @@ import com.iwi.sso.common.CommonDao;
 import com.iwi.sso.common.IException;
 import com.iwi.sso.common.IMap;
 import com.iwi.sso.common.Response;
+import com.iwi.sso.common.SystemConst;
 import com.iwi.sso.util.StringUtil;
 
 @Service
-public class ApiUserServiceImpl implements ApiUserService {
+public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private CommonDao dao;
 
-	private String NAMESPACE = "com.iwi.sso.api.user.ApiUser.";
+	private String NAMESPACE = "com.iwi.sso.user.User.";
 
 	@Override
-	public Response getUserInfo(IMap map) throws Exception {
-		if (map != null && (StringUtils.isEmpty(map.getString("id")) || StringUtils.isEmpty(map.getString("name")))) {
-			throw new IException("필수 파라미터 누락");
+	public List<IMap> getUserInfo() throws Exception {
+		return this.getUserInfo(null);
+	}
+
+	@Override
+	public List<IMap> getUserInfo(IMap map) throws Exception {
+		if (map != null) {
+			if (!map.isEmpty() && (StringUtils.isEmpty(map.getString("id")) || StringUtils.isEmpty(map.getString("name")))) {
+				throw new IException("필수 파라미터 누락");
+			}
+
+			map.put("email", map.getString("id") + "@" + SystemConst.DOMAIN_IWI);
 		}
 
 		List<IMap> userList = this.selectUser(map);
@@ -35,26 +45,22 @@ public class ApiUserServiceImpl implements ApiUserService {
 			throw new IException("사원 정보 없음");
 		}
 
-		if (map == null) {
-			return new Response(userList);
-		} else {
-			return new Response(new IMap(userList));
-		}
+		return userList;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Response setUserLink(Object obj, HttpServletRequest request) throws Exception {
-		List<Map<String, String>> list = null;
+	public int setUserLink(Object obj, HttpServletRequest request) throws Exception {
+		List<Map<String, String>> bodyList = null;
 
 		if (obj instanceof List) {
-			list = (List<Map<String, String>>) obj;
+			bodyList = (List<Map<String, String>>) obj;
 		} else if (obj instanceof Map) {
-			list = new ArrayList<Map<String, String>>();
-			list.add((Map<String, String>) obj);
+			bodyList = new ArrayList<Map<String, String>>();
+			bodyList.add((Map<String, String>) obj);
 		}
 
-		if (list == null || list.size() < 1 || list.get(0).isEmpty()) {
+		if (bodyList == null || bodyList.size() < 1 || bodyList.get(0).isEmpty()) {
 			throw new IException("유효하지 않은 요청입니다.");
 		}
 
@@ -63,9 +69,11 @@ public class ApiUserServiceImpl implements ApiUserService {
 		String domain = StringUtil.getDomainInfo(request);
 		String allowDomain = (String) request.getAttribute("authAllowDomain");
 
-		if (!StringUtils.isEmpty(domain) && domain.toLowerCase().endsWith(allowDomain)) {
-			for (Map<String, String> map : list) {
-				IMap imap = new IMap(map);
+		if (StringUtils.isEmpty(domain) || !domain.toLowerCase().endsWith(allowDomain)) {
+			throw new IException("유효하지 않은 헤더 정보 입니다.");
+		} else {
+			for (Map<String, String> bodyMap : bodyList) {
+				IMap imap = new IMap(bodyMap);
 				if (!StringUtils.isEmpty(imap.getString("seq")) && !StringUtils.isEmpty(imap.getString("email"))) {
 					String site = domain;
 					if (domain.indexOf(".") >= 0) {
@@ -75,16 +83,15 @@ public class ApiUserServiceImpl implements ApiUserService {
 					List<IMap> userList = this.selectUser(imap);
 					if (userList != null && userList.size() > 0) {
 						imap.put("site", site);
+						imap.put("uniqueKey", imap.getString("seq"));
 						dao.update(NAMESPACE + "mergeUserSiteKey", imap);
 						resCnt++;
 					}
 				}
 			}
-		} else {
-			throw new IException("유효하지 않은 헤더 정보 입니다.");
 		}
 
-		return new Response(resCnt);
+		return resCnt;
 	}
 
 	@SuppressWarnings("unchecked")

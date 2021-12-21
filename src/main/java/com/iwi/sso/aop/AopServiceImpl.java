@@ -22,4 +22,9 @@ public class AopServiceImpl implements AopService {
 		return (IMap) dao.select(NAMESPACE + "selectAllowAuthInfo", map);
 	}
 
+	@Override
+	public void insertApiAccessLog(IMap map) throws Exception {
+		dao.insert(NAMESPACE + "insertApiAccessLog", map);
+	}
+
 }
