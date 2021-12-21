@@ -45,6 +45,7 @@ public class AuthController {
 	/**
 	 * 내 정보 조회
 	 * 
+	 * @param body
 	 * @return
 	 * @throws Exception
 	 */
