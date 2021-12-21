@@ -10,7 +10,7 @@ public class SystemConst {
 
 	// SSO TOKEN
 	public static final long ACS_TOKEN_VALID_MINUTES = 60; // 엑세스 토큰 생성 시간 (1시간)
-	public static final long REF_TOKEN_VALID_MINUTES = 60 * 24 * 180; // 리프레쉬 토큰 생성 시간 (180일)
+	public static final long REF_TOKEN_VALID_MINUTES = 60 * 24 * 90; // 리프레쉬 토큰 생성 시간 (90일)
 
 	// Active Directory
 	public static final String AD_SERVER = "LDAP://rainbow.iwi.co.kr:389";
