@@ -1,8 +1,5 @@
 package com.iwi.sso.auth;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,21 +17,16 @@ public class AuthController {
 	private AuthService authService;
 
 	/**
-	 * 토큰 발급
+	 * SSO 로그인 처리
 	 * 
 	 * @param body
 	 * @return
 	 * @throws Exception
 	 */
-	@PostMapping
+	@PostMapping("/signin")
 	@ResponseBody
-	public Response auth(@RequestBody IMap body, HttpServletRequest request) throws Exception {
-		Response res = new Response(authService.createToken(body));
-		if (res.isSuccess()) {
-			authService.setUserSiteKey(body, request);
-			authService.setUserLastLogin(body, request);
-		}
-		return res;
+	public Response signin(@RequestBody IMap body) throws Exception {
+		return new Response(authService.signinProc(body));
 	}
 
 	/**
@@ -46,47 +38,20 @@ public class AuthController {
 	 */
 	@PostMapping("/refresh")
 	@ResponseBody
-	public Response authRefresh(@RequestBody IMap body) throws Exception {
+	public Response refresh(@RequestBody IMap body) throws Exception {
 		return new Response(authService.refreshToken(body));
 	}
 
 	/**
-	 * 토큰 검증
+	 * 내 정보 조회
 	 * 
-	 * @param body
 	 * @return
 	 * @throws Exception
 	 */
-	@PostMapping("/valid")
+	@PostMapping("/me")
 	@ResponseBody
-	public Response authValid(@RequestBody IMap body) throws Exception {
-		return new Response(authService.validationToken(body));
-	}
-
-	/**
-	 * 사이트별 사용자 키 조회
-	 * 
-	 * @param body
-	 * @return
-	 * @throws Exception
-	 */
-	@PostMapping("/sitekey")
-	@ResponseBody
-	public Response authSiteKey(@RequestBody IMap body, HttpServletRequest request) throws Exception {
-		return new Response(authService.getTokenSiteKey(body, request));
-	}
-
-	/**
-	 * SSO 로그인 처리
-	 * 
-	 * @param body
-	 * @return
-	 * @throws Exception
-	 */
-	@PostMapping("/signin")
-	@ResponseBody
-	public Response signin(@RequestBody IMap body, HttpServletResponse response) throws Exception {
-		return new Response(authService.signinProc(body));
+	public Response me(@RequestBody IMap body) throws Exception {
+		return new Response(authService.getUserInfo(body));
 	}
 
 }

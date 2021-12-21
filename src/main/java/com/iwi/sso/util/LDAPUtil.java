@@ -7,7 +7,6 @@ import java.util.List;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttribute;

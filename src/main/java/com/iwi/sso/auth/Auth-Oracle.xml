@@ -2,24 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.iwi.sso.auth.Auth">
 
-	<!-- 사용자 정보 조회 -->
-	<select id="selectUser" parameterType="IMap" resultType="IMap">
+	<!-- 로그인 정보 조회 -->
+	<select id="selectLoginUser" parameterType="IMap" resultType="IMap">
 		SELECT
 			A.USER_SEQ,
 			A.EMAIL,
-			A.PASSWORD,
-			A.USER_NO,
-			A.USER_NM,
-			A.USER_TEL,
-			A.USER_HP,
-			A.USER_FAX,
-			A.USER_BIRTH,
-			A.USER_SEX,
-			A.ENTRY_YMD,
-			A.QUIT_YMD,
-			A.POSI_CD,
-			A.DUTY_CD,
-			A.DEPT_CD
+			A.PASSWORD
 		FROM
 			TB_USER A
 		WHERE
@@ -30,43 +18,40 @@
 			</if>
 	</select>
 
-	<!-- 사용자 리프레쉬토큰 조회 -->
-	<select id="selectUserRefreshToken" parameterType="IMap" resultType="String">
+	<!-- 사용자 정보 조회 -->
+	<select id="selectUserInfo" parameterType="IMap" resultType="IMap">
 		SELECT
-			A.REF_TOKEN
+			A.USER_NO AS EMPL_NO,
+			A.EMAIL,
+			A.USER_NM AS NAME,
+			A.USER_TEL AS TEL,
+			A.USER_HP AS MOBILE,
+			A.USER_FAX AS FAX,
+			A.USER_BIRTH AS BIRTH,
+			CASE
+				WHEN A.USER_SEX = 'M' THEN '남자'
+				WHEN A.USER_SEX = 'F' THEN '여자'
+				ELSE '기타'
+			END AS SEX,
+			A.ENTRY_YMD AS ENTRY_DT,
+			A.QUIT_YMD AS QUIT_DT,
+			FN_GET_COMP_NM(A.COMP_CD) AS COMP,
+			FN_GET_POSI_NM(A.COMP_CD, A.POSI_CD) AS POSI,
+			FN_GET_DUTY_NM(A.COMP_CD, A.DUTY_CD) AS DUTY,
+			FN_GET_DEPT_NM(A.COMP_CD, A.DEPT_CD) AS DEPT
 		FROM
 			TB_USER A
 		WHERE
 			A.USE_YN = 'Y'
 			AND A.DEL_YN = 'N'
+			<if test='email != null and email != ""'>
 			AND UPPER(A.EMAIL) = UPPER(#{email})
-	</select>
-
-	<!-- 리프레쉬토큰으로 사용자 이메일 조회 -->
-	<select id="selectEmailByToken" parameterType="IMap" resultType="String">
-		SELECT
-			A.EMAIL
-		FROM
-			TB_USER A
-		WHERE
-			A.USE_YN = 'Y'
-			AND A.DEL_YN = 'N'
-			AND A.REF_TOKEN = #{refToken}
-	</select>
-
-	<!-- 사용자별 사이트 키 조회 -->
-	<select id="selectUserSiteKey" parameterType="IMap" resultType="String">
-		SELECT
-			B.UNIQUE_KEY
-		FROM
-			TB_USER A
-		LEFT OUTER JOIN TB_USER_SITE_KEY B ON
-			A.USER_SEQ = B.USER_SEQ
-		WHERE
-			A.USE_YN = 'Y'
-			AND A.DEL_YN = 'N'
-			AND UPPER(A.EMAIL) = UPPER(#{email})
-			AND UPPER(B.SITE) = UPPER(#{site})
+			</if>
+			<if test='name  != null and name  != ""'>
+			AND UPPER(A.USER_NM) = UPPER(#{name})
+			</if>
+		ORDER BY
+			A.USER_SEQ DESC
 	</select>
 
 	<!-- 사용자 리프레쉬토큰 업데이트 -->
@@ -80,45 +65,17 @@
 			UPPER(EMAIL) = UPPER(#{email})
 	</update>
 
-	<!-- 인증허용정보 조회 -->
-	<select id="selectAllowAuthInfo" parameterType="IMap" resultType="IMap">
+	<!-- 리프레쉬토큰으로 사용자 이메일 조회 -->
+	<select id="selectEmailByToken" parameterType="IMap" resultType="String">
 		SELECT
-			A.ALLOW_AUTH_SEQ,
-			A.AUTH_KEY,
-			A.DOMAIN
+			A.EMAIL
 		FROM
-			TB_ALLOW_AUTH A
+			TB_USER A
 		WHERE
 			A.USE_YN = 'Y'
 			AND A.DEL_YN = 'N'
-			AND A.AUTH_KEY = #{authKey}
-			AND UPPER(#{domain}) LIKE '%' || UPPER(A.DOMAIN)
-			AND ROWNUM = 1
+			AND A.REF_TOKEN = #{refToken}
 	</select>
-	
-	<!-- 사이트별 사용자 번호 머지 -->
-	<update id="mergeUserSiteKey" parameterType="IMap">
-		MERGE INTO
-			TB_USER_SITE_KEY
-		USING
-			DUAL ON (
-				USER_SEQ = (SELECT MAX(USER_SEQ) FROM TB_USER WHERE UPPER(EMAIL) = UPPER(#{email}))
-				AND UPPER(SITE) = UPPER(#{site})
-			)
-		WHEN MATCHED THEN
-			UPDATE SET
-				UNIQUE_KEY = #{uniqueKey}
-		WHEN NOT MATCHED THEN
-			INSERT (
-				USER_SEQ,
-				SITE,
-				UNIQUE_KEY
-			) VALUES (
-				(SELECT MAX(USER_SEQ) FROM TB_USER WHERE UPPER(EMAIL) = UPPER(#{email})),
-				UPPER(#{site}),
-				#{uniqueKey}
-			)
-	</update>
 	
 	<!-- 마지막 로그인 일자 업데이트 -->
 	<update id="updateUserLastLogin" parameterType="IMap">
