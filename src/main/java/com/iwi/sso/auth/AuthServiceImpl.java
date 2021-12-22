@@ -1,6 +1,7 @@
 package com.iwi.sso.auth;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import com.iwi.sso.common.CommonDao;
 import com.iwi.sso.common.IException;
 import com.iwi.sso.common.IMap;
-import com.iwi.sso.common.SystemConst;
+import com.iwi.sso.util.PropsUtil;
 import com.iwi.sso.util.SecureUtil;
 import com.iwi.sso.util.TokenUtil;
 
@@ -72,42 +73,22 @@ public class AuthServiceImpl implements AuthService {
 		IMap resMap = new IMap();
 		resMap.put("acsToken", acsToken);
 		resMap.put("refToken", refToken);
-		resMap.put("acsTime", SystemConst.ACS_TOKEN_VALID_MINUTES);
-		resMap.put("refTime", SystemConst.REF_TOKEN_VALID_MINUTES);
+		resMap.put("acsTime", PropsUtil.getLong("ACS_TOKEN_VALID_MINUTES"));
+		resMap.put("refTime", PropsUtil.getLong("REF_TOKEN_VALID_MINUTES"));
 
 		// ------------------ set cookie 테스트 시작
 
-		// DateFormat df = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", java.util.Locale.US);
-		// df.setTimeZone(new SimpleTimeZone(0, "KST"));
+		HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getResponse();
 
-		// AuthAop 에서 전달한 requestRefererDomain attribute 수신
-		// HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-		// String cookieDomain = (String) request.getAttribute("authAllowDomain");
+		String cookieDomain = PropsUtil.getString("DOMAIN_IWI");
 
-		// if (!StringUtils.isEmpty(cookieDomain)) {
-		//
-		// HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getResponse();
-		//
-		// String setCookie = "";
-		// Calendar cal = Calendar.getInstance();
-		//
-		// // 엑세스토큰 + 10분 (분 단위)
-		// cal.setTime(new Date());
-		// cal.add(Calendar.MINUTE, Long.valueOf(SystemConst.ACS_TOKEN_VALID_MINUTES).intValue() + 10);
-		//
-		// setCookie = "t=" + resMap.getString("acsToken") + "; domain=" + cookieDomain + "; Path=/; Expires=" + df.format(cal.getTime()) + "; HttpOnly;";
-		// //System.out.println(setCookie);
-		// response.addHeader("Set-Cookie", setCookie);
-		//
-		// // 리프레시토큰 + 1일 (분 단위)
-		// cal.setTime(new Date());
-		// cal.add(Calendar.MINUTE, Long.valueOf(SystemConst.REF_TOKEN_VALID_MINUTES).intValue() + (60 * 24));
-		//
-		// setCookie = "t1=" + resMap.getString("refToken") + "; domain=" + cookieDomain + "; Path=/; Expires=" + df.format(cal.getTime()) + "; HttpOnly;";
-		// //System.out.println(setCookie);
-		// response.addHeader("Set-Cookie", setCookie);
-		//
-		// }
+		String setCookie = "I-REFRESH=" + refToken + "; domain=" + cookieDomain + "; Path=/; Max-Age=" + (PropsUtil.getLong("REF_TOKEN_VALID_MINUTES") * 60) + "; HttpOnly;";
+		System.out.println(setCookie);
+		response.addHeader("Set-Cookie", setCookie);
+
+		setCookie = "I-ACCESS=" + acsToken + "; domain=" + cookieDomain + "; Path=/; Max-Age=" + (PropsUtil.getLong("ACS_TOKEN_VALID_MINUTES") * 60) + "; HttpOnly;";
+		System.out.println(setCookie);
+		response.addHeader("Set-Cookie", setCookie);
 
 		// ------------------ set cookie 테스트 끝
 
@@ -151,9 +132,9 @@ public class AuthServiceImpl implements AuthService {
 		// 토큰 반환
 		IMap resMap = new IMap();
 		resMap.put("acsToken", acsToken);
-		resMap.put("refToken", refToken);
-		resMap.put("acsTime", SystemConst.ACS_TOKEN_VALID_MINUTES);
-		resMap.put("refTime", SystemConst.REF_TOKEN_VALID_MINUTES);
+		// resMap.put("refToken", refToken);
+		resMap.put("acsTime", PropsUtil.getLong("ACS_TOKEN_VALID_MINUTES"));
+		// resMap.put("refTime", PropsUtil.getLong("REF_TOKEN_VALID_MINUTES"));
 
 		return resMap;
 	}

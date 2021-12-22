@@ -23,7 +23,7 @@ import javax.naming.ldap.LdapContext;
 
 import org.springframework.util.StringUtils;
 
-import com.iwi.sso.common.SystemConst;
+import com.iwi.sso.util.PropsUtil;
 
 public class IworksActiveDirectory {
 
@@ -189,9 +189,9 @@ public class IworksActiveDirectory {
 
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 		env.put(Context.SECURITY_AUTHENTICATION, "simple");
-		env.put(Context.PROVIDER_URL, SystemConst.AD_SERVER);
-		env.put(Context.SECURITY_PRINCIPAL, SystemConst.AD_ID + "@" + SystemConst.AD_DOMAIN);
-		env.put(Context.SECURITY_CREDENTIALS, SystemConst.AD_PW);
+		env.put(Context.PROVIDER_URL, PropsUtil.getString("AD_SERVER"));
+		env.put(Context.SECURITY_PRINCIPAL, PropsUtil.getString("AD_ID") + "@" + PropsUtil.getString("AD_DOMAIN"));
+		env.put(Context.SECURITY_CREDENTIALS, PropsUtil.getString("AD_PW"));
 
 		return env;
 	}

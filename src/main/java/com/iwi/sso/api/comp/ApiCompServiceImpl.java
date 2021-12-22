@@ -1,0 +1,24 @@
+package com.iwi.sso.api.comp;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.iwi.sso.common.CommonDao;
+import com.iwi.sso.common.IMap;
+
+@Service
+public class ApiCompServiceImpl implements ApiCompService {
+
+	@Autowired
+	private CommonDao dao;
+
+	private String NAMESPACE = "com.iwi.sso.api.comp.ApiComp.";
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<IMap> selectDept() throws Exception {
+		return dao.list(NAMESPACE + "selectDept", null);
+	}
+}

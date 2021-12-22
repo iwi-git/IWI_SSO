@@ -21,7 +21,6 @@ import org.springframework.util.StringUtils;
 
 import com.iwi.sso.common.IException;
 import com.iwi.sso.common.IMap;
-import com.iwi.sso.common.SystemConst;
 
 public class LDAPUtil {
 
@@ -69,7 +68,7 @@ public class LDAPUtil {
 		SearchControls searchCtls = new SearchControls();
 		searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
-		NamingEnumeration<SearchResult> answer = ctx.search(SystemConst.AD_BASE, searchFilter, searchCtls);
+		NamingEnumeration<SearchResult> answer = ctx.search(PropsUtil.getString("AD_BASE"), searchFilter, searchCtls);
 
 		list = getList(answer);
 
@@ -109,9 +108,9 @@ public class LDAPUtil {
 		Hashtable<String, String> env = new Hashtable<String, String>();
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 		env.put(Context.SECURITY_AUTHENTICATION, "simple");
-		env.put(Context.PROVIDER_URL, SystemConst.AD_SERVER);
-		env.put(Context.SECURITY_PRINCIPAL, SystemConst.AD_ID + "@" + SystemConst.AD_DOMAIN);
-		env.put(Context.SECURITY_CREDENTIALS, SystemConst.AD_PW);
+		env.put(Context.PROVIDER_URL, PropsUtil.getString("AD_SERVER"));
+		env.put(Context.SECURITY_PRINCIPAL, PropsUtil.getString("AD_ID") + "@" + PropsUtil.getString("AD_DOMAIN"));
+		env.put(Context.SECURITY_CREDENTIALS, PropsUtil.getString("AD_PW"));
 		return env;
 	}
 

@@ -1,7 +1,6 @@
 package com.iwi.sso.util;
 
 import java.util.Date;
-import com.iwi.sso.common.SystemConst;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -17,8 +16,8 @@ public class TokenUtil {
 		return Jwts.builder()
 				.setClaims(claims)
 				.setIssuedAt(now)
-				.setExpiration(new Date(System.currentTimeMillis() + (SystemConst.ACS_TOKEN_VALID_MINUTES * 60 * 1000)))
-				.signWith(SignatureAlgorithm.HS256, SystemConst.SECRET_KEY)
+				.setExpiration(new Date(System.currentTimeMillis() + (PropsUtil.getLong("ACS_TOKEN_VALID_MINUTES") * 60 * 1000)))
+				.signWith(SignatureAlgorithm.HS256, PropsUtil.getString("SECRET_KEY"))
 				.compact();
 	}
 
@@ -27,15 +26,15 @@ public class TokenUtil {
 		Date now = new Date();
 		return Jwts.builder()
 				.setIssuedAt(now)
-				.setExpiration(new Date(System.currentTimeMillis() + (SystemConst.REF_TOKEN_VALID_MINUTES * 60 * 1000)))
-				.signWith(SignatureAlgorithm.HS256, SystemConst.SECRET_KEY)
+				.setExpiration(new Date(System.currentTimeMillis() + (PropsUtil.getLong("REF_TOKEN_VALID_MINUTES") * 60 * 1000)))
+				.signWith(SignatureAlgorithm.HS256, PropsUtil.getString("SECRET_KEY"))
 				.compact();
 	}
 
 	// 토큰 만료 체크
 	public static Boolean isTokenExpired(String token) throws SignatureException {
 		try {
-			Claims claims = Jwts.parser().setSigningKey(SystemConst.SECRET_KEY).parseClaimsJws(token).getBody();
+			Claims claims = Jwts.parser().setSigningKey(PropsUtil.getString("SECRET_KEY")).parseClaimsJws(token).getBody();
 			return claims.getExpiration().before(new Date());
 		} catch (ExpiredJwtException e) {
 			// 토큰 만료
@@ -45,7 +44,7 @@ public class TokenUtil {
 
 	// 토큰에서 subject 추출
 	public static String getSubjectFromToken(String token) throws SignatureException {
-		Claims claims = Jwts.parser().setSigningKey(SystemConst.SECRET_KEY).parseClaimsJws(token).getBody();
+		Claims claims = Jwts.parser().setSigningKey(PropsUtil.getString("SECRET_KEY")).parseClaimsJws(token).getBody();
 		return claims.getSubject();
 	}
 
@@ -57,7 +56,7 @@ public class TokenUtil {
 
 	// 토큰 만료일 반환
 	public static Date getExpirationDateFromToken(String token) throws SignatureException {
-		Claims claims = Jwts.parser().setSigningKey(SystemConst.SECRET_KEY).parseClaimsJws(token).getBody();
+		Claims claims = Jwts.parser().setSigningKey(PropsUtil.getString("SECRET_KEY")).parseClaimsJws(token).getBody();
 		return claims.getExpiration();
 	}
 

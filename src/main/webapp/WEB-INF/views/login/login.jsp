@@ -33,10 +33,6 @@
 				data : $("#frmLogin").getJsonStr(),
 				beforeSend : function(xhr) {
 					xhr.setRequestHeader("Content-type", "application/json");
-					xhr.setRequestHeader("Authorization", "Bearer 0E697311A48144C89F51A324A030A67B");
-				},
-				xhrFields : {
-					withCredentials : true
 				},
 				success : function(resp) {
 					if (resp.success) {
@@ -54,8 +50,8 @@
 <body>
 	
 	<form id="frmLogin" name="frmLogin" method="post" onsubmit="return fnLogin();">
-		<input type="text" name="email" /><br />
-		<input type="password" name="password" /><br />
+		<input type="text" name="email" value="kjg@iwi.co.kr" /><br />
+		<input type="password" name="password" value="01091663305" /><br />
 		<button type="submit">로그인</button>
 	</form>
 	

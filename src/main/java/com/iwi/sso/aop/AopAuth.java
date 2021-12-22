@@ -9,30 +9,22 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.iwi.sso.common.IException;
-import com.iwi.sso.common.SystemConst;
+import com.iwi.sso.util.PropsUtil;
 import com.iwi.sso.util.StringUtil;
 
 @Aspect
 @Component
-public class AopCommon {
+public class AopAuth {
 
 	// @Autowired
 	// private AopService aopService;
 
-	/**
-	 * SSO 모든 기능은 *.iwi.co.kr 도메인에서만 작동함
-	 */
-	@Pointcut("execution(* com.iwi.sso.**.*Controller.*(..))")
-	public void allPointcut() {
+	@Pointcut("execution(* com.iwi.sso.auth.*Controller.*(..))")
+	public void authPointcut() {
 	}
 
-	/**
-	 * Before auth/api 헤더 인증 정보 확인
-	 * 
-	 * @throws Exception
-	 */
-	@Before("allPointcut()")
-	public void checkAll() throws Exception {
+	@Before("authPointcut()")
+	public void beforeAuth() throws Exception {
 		ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
 		HttpServletRequest request = requestAttributes.getRequest();
 
@@ -44,7 +36,7 @@ public class AopCommon {
 
 		// referer IWI 도메인 체크
 		String domain = StringUtil.getDomainInfo(referer);
-		if (!domain.endsWith(SystemConst.DOMAIN_IWI)) {
+		if (!domain.endsWith(PropsUtil.getString("DOMAIN_IWI"))) {
 			throw new IException("유효하지 않은 요청입니다.");
 		}
 	}
