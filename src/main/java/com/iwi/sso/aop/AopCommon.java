@@ -87,7 +87,7 @@ public class AopCommon {
 			String domain = StringUtil.getDomainInfo(referer);
 
 			// 인증 허용 정보 조회
-			IMap authMap = aopService.selectAllowAuthInfo(authKey, domain);
+			IMap authMap = aopService.selectApiAuthInfo(authKey, domain);
 			if (authMap == null) {
 				throw new IException("유효하지 않은 헤더 정보 입니다.");
 			}

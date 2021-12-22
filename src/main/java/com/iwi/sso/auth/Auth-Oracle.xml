@@ -81,13 +81,13 @@
 	</update>
 
 	<!-- 인증허용정보 조회 -->
-	<select id="selectAllowAuthInfo" parameterType="IMap" resultType="IMap">
+	<select id="selectApiAuthInfo" parameterType="IMap" resultType="IMap">
 		SELECT
-			A.ALLOW_AUTH_SEQ,
+			A.API_AUTH_SEQ,
 			A.AUTH_KEY,
 			A.DOMAIN
 		FROM
-			TB_ALLOW_AUTH A
+			TB_API_AUTH A
 		WHERE
 			A.USE_YN = 'Y'
 			AND A.DEL_YN = 'N'
