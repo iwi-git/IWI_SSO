@@ -42,14 +42,9 @@ public class AopApi {
 			throw new IException("헤더 정보를 찾을수 없습니다.");
 		}
 
-		authKey = authKey.replace("Bearer ", "");
-
-		// referer 에서 domain 추출
-		String domain = StringUtil.getDomainInfo(referer);
-
 		// 인증 허용 정보 조회
-		IMap authMap = aopService.selectApiAuthInfo(authKey, domain);
-		if (authMap == null) {
+		IMap authApi = aopService.selectApiAuthInfo(authKey, referer);
+		if (authApi == null) {
 			throw new IException("유효하지 않은 헤더 정보 입니다.");
 		}
 	}
