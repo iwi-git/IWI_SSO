@@ -8,4 +8,8 @@ public interface ApiCompService {
 
 	public List<IMap> selectDept() throws Exception;
 
+	public List<IMap> selectPosi() throws Exception;
+
+	public List<IMap> selectDuty() throws Exception;
+
 }

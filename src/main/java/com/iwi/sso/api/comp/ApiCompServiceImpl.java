@@ -21,4 +21,16 @@ public class ApiCompServiceImpl implements ApiCompService {
 	public List<IMap> selectDept() throws Exception {
 		return dao.list(NAMESPACE + "selectDept", null);
 	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<IMap> selectPosi() throws Exception {
+		return dao.list(NAMESPACE + "selectPosi", null);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<IMap> selectDuty() throws Exception {
+		return dao.list(NAMESPACE + "selectDuty", null);
+	}
 }

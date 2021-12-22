@@ -4,11 +4,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.iwi.sso.common.IException;
+import com.iwi.sso.common.IMap;
 import com.iwi.sso.util.PropsUtil;
 import com.iwi.sso.util.StringUtil;
 
@@ -16,8 +18,8 @@ import com.iwi.sso.util.StringUtil;
 @Component
 public class AopApi {
 
-	// @Autowired
-	// private AopService aopService;
+	@Autowired
+	private AopService aopService;
 
 	@Pointcut("execution(* com.iwi.sso.api.**.*Controller.*(..))")
 	public void apiPointcut() {
@@ -35,9 +37,20 @@ public class AopApi {
 		}
 
 		// referer IWI 도메인 체크
+		String authKey = request.getHeader("Authorization");
+		if (StringUtils.isEmpty(authKey)) {
+			throw new IException("헤더 정보를 찾을수 없습니다.");
+		}
+
+		authKey = authKey.replace("Bearer ", "");
+
+		// referer 에서 domain 추출
 		String domain = StringUtil.getDomainInfo(referer);
-		if (!domain.endsWith(PropsUtil.getString("DOMAIN_IWI"))) {
-			throw new IException("유효하지 않은 요청입니다.");
+
+		// 인증 허용 정보 조회
+		IMap authMap = aopService.selectApiAuthInfo(authKey, domain);
+		if (authMap == null) {
+			throw new IException("유효하지 않은 헤더 정보 입니다.");
 		}
 	}
 

@@ -17,8 +17,20 @@ public class ApiCompController {
 
 	@GetMapping("/dept")
 	@ResponseBody
-	public Response signin() throws Exception {
+	public Response dept() throws Exception {
 		return new Response(apiCompService.selectDept());
+	}
+
+	@GetMapping("/posi")
+	@ResponseBody
+	public Response posi() throws Exception {
+		return new Response(apiCompService.selectPosi());
+	}
+
+	@GetMapping("/duty")
+	@ResponseBody
+	public Response duty() throws Exception {
+		return new Response(apiCompService.selectDuty());
 	}
 
 }

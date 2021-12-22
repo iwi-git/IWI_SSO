@@ -15,11 +15,11 @@ public class AopServiceImpl implements AopService {
 	private String NAMESPACE = "com.iwi.sso.aop.Aop.";
 
 	@Override
-	public IMap selectAllowAuthInfo(String authKey, String domain) throws Exception {
+	public IMap selectApiAuthInfo(String authKey, String domain) throws Exception {
 		IMap map = new IMap();
 		map.put("authKey", authKey);
 		map.put("domain", domain);
-		return (IMap) dao.select(NAMESPACE + "selectAllowAuthInfo", map);
+		return (IMap) dao.select(NAMESPACE + "selectApiAuthInfo", map);
 	}
 
 	@Override
