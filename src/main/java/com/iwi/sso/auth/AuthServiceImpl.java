@@ -1,5 +1,6 @@
 package com.iwi.sso.auth;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -99,14 +100,28 @@ public class AuthServiceImpl implements AuthService {
 	 * 엑세스 토큰 갱신
 	 */
 	@Override
-	public IMap refreshToken(IMap map) throws Exception {
+	public IMap refreshToken() throws Exception {
 		String acsToken = null;
-		String refToken = map.getString("refToken");
+		String refToken = null;
+
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+
+		Cookie[] cookies = request.getCookies();
+		for (Cookie cookie : cookies) {
+			String name = cookie.getName();
+			if ("I-REFRESH".equals(name)) {
+				refToken = cookie.getValue();
+				break;
+			}
+		}
 
 		if (StringUtils.isEmpty(refToken)) {
 			// System.out.println("####### refreshToken map : " + map);
 			throw new IException("필수 파라미터 누락");
 		}
+
+		IMap map = new IMap();
+		map.put("refToken", refToken);
 
 		String email = null;
 
@@ -140,12 +155,26 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	@Override
-	public IMap getUserInfo(IMap map) throws Exception {
-		String acsToken = map.getString("acsToken");
+	public IMap getUserInfo() throws Exception {
+		String acsToken = null;
+
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+
+		Cookie[] cookies = request.getCookies();
+		for (Cookie cookie : cookies) {
+			String name = cookie.getName();
+			if ("I-ACCESS".equals(name)) {
+				acsToken = cookie.getValue();
+				break;
+			}
+		}
 
 		if (StringUtils.isEmpty(acsToken)) {
 			throw new IException("필수 파라미터 누락");
 		}
+
+		IMap map = new IMap();
+		map.put("acsToken", acsToken);
 
 		String email = TokenUtil.getSubjectFromToken(acsToken);
 		map.put("email", email);

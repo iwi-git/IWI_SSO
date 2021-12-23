@@ -38,8 +38,8 @@ public class AuthController {
 	 */
 	@PostMapping("/refresh")
 	@ResponseBody
-	public Response refresh(@RequestBody IMap body) throws Exception {
-		return new Response(authService.refreshToken(body));
+	public Response refresh() throws Exception {
+		return new Response(authService.refreshToken());
 	}
 
 	/**
@@ -51,8 +51,8 @@ public class AuthController {
 	 */
 	@PostMapping("/me")
 	@ResponseBody
-	public Response me(@RequestBody IMap body) throws Exception {
-		return new Response(authService.getUserInfo(body));
+	public Response me() throws Exception {
+		return new Response(authService.getUserInfo());
 	}
 
 }

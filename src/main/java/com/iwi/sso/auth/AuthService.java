@@ -6,8 +6,8 @@ public interface AuthService {
 
 	public IMap signinProc(IMap map) throws Exception;
 
-	public IMap refreshToken(IMap map) throws Exception;
+	public IMap refreshToken() throws Exception;
 
-	public IMap getUserInfo(IMap map) throws Exception;
+	public IMap getUserInfo() throws Exception;
 
 }
