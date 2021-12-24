@@ -77,21 +77,27 @@ public class AuthServiceImpl implements AuthService {
 		resMap.put("acsTime", PropsUtil.getLong("ACS_TOKEN_VALID_MINUTES"));
 		resMap.put("refTime", PropsUtil.getLong("REF_TOKEN_VALID_MINUTES"));
 
-		// ------------------ set cookie 테스트 시작
+		// ------------------ set cookie start
 
 		HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getResponse();
 
 		String cookieDomain = PropsUtil.getString("DOMAIN_IWI");
 
-		String setCookie = "I-REFRESH=" + refToken + "; domain=" + cookieDomain + "; Path=/; Max-Age=" + (PropsUtil.getLong("REF_TOKEN_VALID_MINUTES") * 60) + "; HttpOnly;";
-		System.out.println(setCookie);
+		String setCookie = "I-REFRESH=" + refToken + "; Path=/; Max-Age=" + (PropsUtil.getLong("REF_TOKEN_VALID_MINUTES") * 60) + "; HttpOnly;";
+		if (!"Y".equals(PropsUtil.getString("DEV_YN"))) {
+			setCookie += "domain=" + cookieDomain;
+		}
+		// System.out.println(setCookie);
 		response.addHeader("Set-Cookie", setCookie);
 
-		setCookie = "I-ACCESS=" + acsToken + "; domain=" + cookieDomain + "; Path=/; Max-Age=" + (PropsUtil.getLong("ACS_TOKEN_VALID_MINUTES") * 60) + "; HttpOnly;";
-		System.out.println(setCookie);
+		setCookie = "I-ACCESS=" + acsToken + "; Path=/; Max-Age=" + (PropsUtil.getLong("ACS_TOKEN_VALID_MINUTES") * 60) + "; HttpOnly;";
+		if (!"Y".equals(PropsUtil.getString("DEV_YN"))) {
+			setCookie += "domain=" + cookieDomain;
+		}
+		// System.out.println(setCookie);
 		response.addHeader("Set-Cookie", setCookie);
 
-		// ------------------ set cookie 테스트 끝
+		// ------------------ set cookie end
 
 		return resMap;
 	}
@@ -101,29 +107,33 @@ public class AuthServiceImpl implements AuthService {
 	 */
 	@Override
 	public IMap refreshToken() throws Exception {
+		IMap map = new IMap();
+
+		String email = null;
 		String acsToken = null;
+		// String refToken = map.getString("refToken");
 		String refToken = null;
 
-		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-
-		Cookie[] cookies = request.getCookies();
-		for (Cookie cookie : cookies) {
-			String name = cookie.getName();
-			if ("I-REFRESH".equals(name)) {
-				refToken = cookie.getValue();
-				break;
+		try {
+			ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+			HttpServletRequest request = requestAttributes.getRequest();
+			Cookie[] cookies = request.getCookies();
+			for (Cookie cookie : cookies) {
+				String name = cookie.getName();
+				if ("I-REFRESH".equals(name)) {
+					refToken = cookie.getValue();
+					map.put("refToken", refToken);
+					break;
+				}
 			}
+		} catch (Exception e) {
+			throw new IException("인증 토큰 필요");
 		}
 
 		if (StringUtils.isEmpty(refToken)) {
 			// System.out.println("####### refreshToken map : " + map);
 			throw new IException("필수 파라미터 누락");
 		}
-
-		IMap map = new IMap();
-		map.put("refToken", refToken);
-
-		String email = null;
 
 		// 리프레쉬 토큰 만료 체크
 		boolean isRefExpired = TokenUtil.isTokenExpired(refToken);
@@ -151,30 +161,50 @@ public class AuthServiceImpl implements AuthService {
 		resMap.put("acsTime", PropsUtil.getLong("ACS_TOKEN_VALID_MINUTES"));
 		// resMap.put("refTime", PropsUtil.getLong("REF_TOKEN_VALID_MINUTES"));
 
+		// ------------------ set cookie start
+
+		HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getResponse();
+
+		String cookieDomain = PropsUtil.getString("DOMAIN_IWI");
+
+		String setCookie = "I-ACCESS=" + acsToken + "; Path=/; Max-Age=" + (PropsUtil.getLong("ACS_TOKEN_VALID_MINUTES") * 60) + "; HttpOnly;";
+		if (!"Y".equals(PropsUtil.getString("DEV_YN"))) {
+			setCookie += "domain=" + cookieDomain;
+		}
+		// System.out.println(setCookie);
+		response.addHeader("Set-Cookie", setCookie);
+
+		// ------------------ set cookie end
+
 		return resMap;
 	}
 
 	@Override
 	public IMap getUserInfo() throws Exception {
+		IMap map = new IMap();
+
+		// String acsToken = map.getString("acsToken");
 		String acsToken = null;
 
-		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-
-		Cookie[] cookies = request.getCookies();
-		for (Cookie cookie : cookies) {
-			String name = cookie.getName();
-			if ("I-ACCESS".equals(name)) {
-				acsToken = cookie.getValue();
-				break;
+		try {
+			ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+			HttpServletRequest request = requestAttributes.getRequest();
+			Cookie[] cookies = request.getCookies();
+			for (Cookie cookie : cookies) {
+				String name = cookie.getName();
+				if ("I-ACCESS".equals(name)) {
+					acsToken = cookie.getValue();
+					map.put("acsToken", acsToken);
+					break;
+				}
 			}
+		} catch (Exception e) {
+			throw new IException("인증 토큰 필요");
 		}
 
 		if (StringUtils.isEmpty(acsToken)) {
 			throw new IException("필수 파라미터 누락");
 		}
-
-		IMap map = new IMap();
-		map.put("acsToken", acsToken);
 
 		String email = TokenUtil.getSubjectFromToken(acsToken);
 		map.put("email", email);
