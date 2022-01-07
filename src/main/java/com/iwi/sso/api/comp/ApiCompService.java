@@ -6,7 +6,7 @@ import com.iwi.sso.common.IMap;
 
 public interface ApiCompService {
 
-	public List<IMap> selectDept() throws Exception;
+	public List<IMap> selectDept(IMap map) throws Exception;
 
 	public List<IMap> selectPosi() throws Exception;
 

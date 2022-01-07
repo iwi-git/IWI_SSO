@@ -1,12 +1,13 @@
 package com.iwi.sso.common;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.jdbc.support.JdbcUtils;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SuppressWarnings("rawtypes")
 public class IMap extends HashMap {
@@ -83,53 +84,40 @@ public class IMap extends HashMap {
 		}
 	}
 
+	/**
+	 * 객체 변환 Object(Map type) > IMap
+	 * 
+	 * @param map
+	 */
+	public IMap(Object obj) {
+		try {
+			ObjectMapper objectMapper = new ObjectMapper();
+			Map<?, ?> map = objectMapper.convertValue(obj, Map.class);
+			this.putMapEntries(map);
+		} catch (Exception e) {
+			// e.printStackTrace();
+		}
+	}
+
 	public IMap(String key, Object value) {
 		this.put(key, value);
 	}
 
-	/**
-	 * String 형태로 반환
-	 * 
-	 * @param key
-	 * @return
-	 */
 	public String getString(String key) {
-		if (get(key) == null) {
-			return "";
-		} else if (get(key) instanceof String[]) {
-			if (((String[]) get(key)).length == 1) {
-				return ((String[]) get(key))[0];
-			} else {
-				StringBuilder builder = new StringBuilder();
-				StringBuilder logbuilder = new StringBuilder();
-				logbuilder.append("\nPlease use the getStringArry(String " + key + ").\n The values of " + key + " are\n");
-
-				for (String str : (String[]) get(key)) {
-					builder.append(str);
-					logbuilder.append(str + ",");
-				}
-				// log.error(logbuilder.toString());
-
-				return builder.toString();
-			}
-		} else if (get(key) instanceof String) {
-			// return (String) get(key);
-			return ((String) get(key) == null) ? "" : (String) get(key);
-		} else if (get(key) instanceof Integer) {
-
-			return Integer.toString((Integer) get(key));
-		} else if (get(key) instanceof Long) {
-
-			return Long.toString((Long) get(key));
-		} else if (get(key) instanceof BigDecimal) {
-
-			return ((BigDecimal) get(key)).toString();
-		} else if (get(key) instanceof Double) {
-
-			return Double.toString((Double) get(key));
-		} else {
-
-			return "Unidentify Type";
+		Object obj = this.get(key);
+		if (obj instanceof String) {
+			return (String) obj;
 		}
+		return null;
+	}
+
+	public int getInt(String key) {
+		Object obj = this.get(key);
+		return Integer.valueOf((String) obj);
+	}
+
+	public long getLong(String key) {
+		Object obj = this.get(key);
+		return Long.valueOf((String) obj);
 	}
 }

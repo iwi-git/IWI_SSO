@@ -3,24 +3,34 @@
 <mapper namespace="com.iwi.sso.api.comp.ApiComp">
 
 	<!-- 부서 목록 조회 -->
-	<select id="selectDept" resultType="IMap">
+	<select id="selectDept" parameterType="IMap" resultType="IMap">
 		SELECT
-			DEPT_CD,
-			DEPT_NM,
-			UP_DEPT_CD,
-			FN_GET_DEPT_NM(UP_DEPT_CD) AS UP_DEPT_NM,
-			LTRIM(SYS_CONNECT_BY_PATH(DEPT_NM, ' > '), ' > ') AS DEPT_PATH,
-			DECODE((SELECT COUNT(1) FROM TB_DEPT WHERE UP_DEPT_CD = A.DEPT_CD), 0, 'Y', 'N') AS LEAF_YN,
-			LEVEL,
-			SORT
+			T.*
 		FROM
-			TB_DEPT A
-		START WITH
-			UP_DEPT_CD IS NULL
-		CONNECT BY
-			PRIOR DEPT_CD = UP_DEPT_CD
-		ORDER SIBLINGS BY
-			SORT
+			(
+				SELECT
+					DEPT_CD,
+					DEPT_NM,
+					UP_DEPT_CD,
+					FN_GET_DEPT_NM(UP_DEPT_CD) AS UP_DEPT_NM,
+					LTRIM(SYS_CONNECT_BY_PATH(DEPT_NM, ' > '), ' > ') AS DEPT_PATH,
+					DECODE((SELECT COUNT(1) FROM TB_DEPT WHERE UP_DEPT_CD = A.DEPT_CD), 0, 'Y', 'N') AS LEAF_YN,
+					LEVEL,
+					SORT
+				FROM
+					TB_DEPT A
+				START WITH
+					UP_DEPT_CD IS NULL
+				CONNECT BY
+					PRIOR DEPT_CD = UP_DEPT_CD
+				ORDER SIBLINGS BY
+					SORT
+			) T
+		WHERE
+			1 = 1
+			<if test='leafYn != null and leafYn != ""'>
+			AND T.LEAF_YN = #{leafYn}
+			</if>
 	</select>
 
 	<!-- 직급 목록 조회 -->

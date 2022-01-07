@@ -30,6 +30,19 @@ public class AuthController {
 	}
 
 	/**
+	 * 내 정보 조회
+	 * 
+	 * @param body
+	 * @return
+	 * @throws Exception
+	 */
+	@PostMapping("/validate")
+	@ResponseBody
+	public Response validate() throws Exception {
+		return new Response(authService.validateToken());
+	}
+
+	/**
 	 * 토큰 갱신
 	 * 
 	 * @param body

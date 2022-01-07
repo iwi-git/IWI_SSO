@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ include file="/WEB-INF/views/common/taglib.jsp"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -33,15 +34,10 @@
 				data : $("#frmLogin").getJsonStr(),
 				beforeSend : function(xhr) {
 					xhr.setRequestHeader("Content-type", "application/json");
-					xhr.setRequestHeader("Authorization", "Bearer 0E697311A48144C89F51A324A030A67B");
-				},
-				xhrFields : {
-					withCredentials : true
 				},
 				success : function(resp) {
-					if (resp.success) {
-						console.log(resp.data);
-						alert("로그인 성공");
+					if (resp.code == "00") {
+						location.replace("/");
 					} else {
 						alert(resp.message);
 					}

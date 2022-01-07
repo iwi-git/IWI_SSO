@@ -11,8 +11,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.iwi.sso.common.IException;
 import com.iwi.sso.common.IMap;
-import com.iwi.sso.util.PropsUtil;
-import com.iwi.sso.util.StringUtil;
 
 @Aspect
 @Component
@@ -36,7 +34,7 @@ public class AopApi {
 			throw new IException("유효하지 않은 요청입니다.");
 		}
 
-		// referer IWI 도메인 체크
+		// Authorization 체크
 		String authKey = request.getHeader("Authorization");
 		if (StringUtils.isEmpty(authKey)) {
 			throw new IException("헤더 정보를 찾을수 없습니다.");

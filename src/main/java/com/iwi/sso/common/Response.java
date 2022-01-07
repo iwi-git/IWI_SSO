@@ -7,31 +7,31 @@ import lombok.Setter;
 @Setter
 public class Response {
 
-	private boolean success = false;
+	private String code = "00";
 	private String message;
 	private Object data;
 
 	public Response() {
 	}
 
-	public Response(boolean s) {
-		this(s, null, null);
-	}
-
 	public Response(Object d) {
-		this(true, null, d);
+		this("00", null, d);
 	}
 
-	public Response(boolean s, Object d) {
-		this(s, null, d);
+	public Response(String c) {
+		this(c, null, null);
 	}
 
-	public Response(boolean s, String m) {
-		this(s, m, null);
+	public Response(String c, Object d) {
+		this(c, null, d);
 	}
 
-	public Response(boolean s, String m, Object d) {
-		this.success = s;
+	public Response(String c, String m) {
+		this(c, m, null);
+	}
+
+	public Response(String c, String m, Object d) {
+		this.code = c;
 		this.message = m;
 		this.data = d;
 	}

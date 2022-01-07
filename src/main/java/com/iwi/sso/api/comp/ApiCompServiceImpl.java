@@ -1,6 +1,7 @@
 package com.iwi.sso.api.comp;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,8 +19,8 @@ public class ApiCompServiceImpl implements ApiCompService {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<IMap> selectDept() throws Exception {
-		return dao.list(NAMESPACE + "selectDept", null);
+	public List<IMap> selectDept(IMap map) throws Exception {
+		return dao.list(NAMESPACE + "selectDept", map);
 	}
 
 	@SuppressWarnings("unchecked")

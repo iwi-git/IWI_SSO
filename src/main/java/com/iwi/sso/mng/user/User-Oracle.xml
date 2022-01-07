@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iwi.sso.mng.user.User">
+
+	<select id="selectUser" parameterType="IMap" resultType="IMap">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY A.USER_SEQ DESC) AS RN,
+			A.USER_SEQ,
+			SUBSTR(A.EMAIL, 0, INSTR(A.EMAIL, '@') - 1) AS USER_ID,
+			A.EMAIL,
+			A.USER_NO,
+			A.USER_NM,
+			A.DEPT_CD,
+			A.POSI_CD,
+			A.DUTY_CD,
+			FN_GET_DEPT_NM(A.DEPT_CD) AS DEPT_NM,
+			FN_GET_POSI_NM(A.POSI_CD) AS POSI_NM,
+			FN_GET_DUTY_NM(A.DUTY_CD) AS DUTY_NM,
+			A.USER_HP,
+			A.USER_TEL,
+			A.USER_FAX,
+			A.USER_BIRTH,
+			A.USER_SEX,
+			A.ENTRY_YMD,
+			A.QUIT_YMD,
+			A.LAST_LOGIN_DT,
+			A.LAST_LOGIN_IP,
+			NVL(A.USE_YN, 'Y') AS USE_YN,
+			NVL(A.DEL_YN, 'N') AS DEL_YN
+		FROM
+			TB_USER A
+		WHERE
+			1 = 1
+			<if test='userSeq != null and userSeq != ""'>
+			AND A.USER_SEQ = #{userSeq}
+			</if>
+	</select>
+	
+	<update id="updateUser" parameterType="IMap">
+	</update>
+	
+	<insert id="insertUser" parameterType="IMap">
+	</insert>
+
+</mapper>

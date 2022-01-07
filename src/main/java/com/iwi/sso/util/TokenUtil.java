@@ -11,13 +11,14 @@ public class TokenUtil {
 
 	// 엑세스 토큰 생성
 	public static String createAccessToken(String subject) {
+		System.out.println("IWORKSINTERACTIVE");
 		Claims claims = Jwts.claims().setSubject(subject);
 		Date now = new Date();
 		return Jwts.builder()
 				.setClaims(claims)
 				.setIssuedAt(now)
-				.setExpiration(new Date(System.currentTimeMillis() + (PropsUtil.getLong("ACS_TOKEN_VALID_MINUTES") * 60 * 1000)))
-				.signWith(SignatureAlgorithm.HS256, PropsUtil.getString("SECRET_KEY"))
+				.setExpiration(new Date(System.currentTimeMillis() + (1 * 60 * 1000)))
+				.signWith(SignatureAlgorithm.HS256, "IWORKSINTERACTIVE")
 				.compact();
 	}
 
@@ -26,15 +27,15 @@ public class TokenUtil {
 		Date now = new Date();
 		return Jwts.builder()
 				.setIssuedAt(now)
-				.setExpiration(new Date(System.currentTimeMillis() + (PropsUtil.getLong("REF_TOKEN_VALID_MINUTES") * 60 * 1000)))
-				.signWith(SignatureAlgorithm.HS256, PropsUtil.getString("SECRET_KEY"))
+				.setExpiration(new Date(System.currentTimeMillis() + (10 * 60 * 1000)))
+				.signWith(SignatureAlgorithm.HS256, "IWORKSINTERACTIVE")
 				.compact();
 	}
 
 	// 토큰 만료 체크
 	public static Boolean isTokenExpired(String token) throws SignatureException {
 		try {
-			Claims claims = Jwts.parser().setSigningKey(PropsUtil.getString("SECRET_KEY")).parseClaimsJws(token).getBody();
+			Claims claims = Jwts.parser().setSigningKey("IWORKSINTERACTIVE").parseClaimsJws(token).getBody();
 			return claims.getExpiration().before(new Date());
 		} catch (ExpiredJwtException e) {
 			// 토큰 만료
@@ -44,8 +45,15 @@ public class TokenUtil {
 
 	// 토큰에서 subject 추출
 	public static String getSubjectFromToken(String token) throws SignatureException {
-		Claims claims = Jwts.parser().setSigningKey(PropsUtil.getString("SECRET_KEY")).parseClaimsJws(token).getBody();
-		return claims.getSubject();
+		String subject = null;
+		try {
+			Claims claims = Jwts.parser().setSigningKey("IWORKSINTERACTIVE").parseClaimsJws(token).getBody();
+			subject = claims.getSubject();
+		} catch (ExpiredJwtException e) {
+			// 토큰 만료
+			subject = e.getClaims().getSubject();
+		}
+		return subject;
 	}
 
 	// 토큰 유효성 검증
@@ -56,7 +64,7 @@ public class TokenUtil {
 
 	// 토큰 만료일 반환
 	public static Date getExpirationDateFromToken(String token) throws SignatureException {
-		Claims claims = Jwts.parser().setSigningKey(PropsUtil.getString("SECRET_KEY")).parseClaimsJws(token).getBody();
+		Claims claims = Jwts.parser().setSigningKey("IWORKSINTERACTIVE").parseClaimsJws(token).getBody();
 		return claims.getExpiration();
 	}
 

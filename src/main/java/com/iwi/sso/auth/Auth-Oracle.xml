@@ -63,16 +63,17 @@
 			UPPER(EMAIL) = UPPER(#{email})
 	</update>
 
-	<!-- 리프레쉬토큰으로 사용자 이메일 조회 -->
-	<select id="selectEmailByToken" parameterType="IMap" resultType="String">
+	<!-- 이메일/리프레쉬 토큰 교차 검증 -->
+	<select id="selectCountEmailAndToken" parameterType="IMap" resultType="Integer">
 		SELECT
-			A.EMAIL
+			COUNT(1)
 		FROM
 			TB_USER A
 		WHERE
 			A.USE_YN = 'Y'
 			AND A.DEL_YN = 'N'
 			AND A.REF_TOKEN = #{refToken}
+			AND UPPER(A.EMAIL) = UPPER(#{email})
 	</select>
 	
 	<!-- 마지막 로그인 일자 업데이트 -->
