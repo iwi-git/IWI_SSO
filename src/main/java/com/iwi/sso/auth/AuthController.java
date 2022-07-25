@@ -68,4 +68,17 @@ public class AuthController {
 		return new Response(authService.getUserInfo());
 	}
 
+	/**
+	 * 로그아웃
+	 * 
+	 * @param body
+	 * @return
+	 * @throws Exception
+	 */
+	@PostMapping("/signout")
+	@ResponseBody
+	public Response logout() throws Exception {
+		return new Response(authService.signoutProc());
+	}
+
 }

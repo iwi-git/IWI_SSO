@@ -42,6 +42,10 @@ table {
 	width: 100%;
 }
 
+table.grid {
+	min-width:800px;
+}
+
 table.grid * {
 	box-sizing: border-box;
 }
@@ -403,6 +407,11 @@ strong.desc {
 		$("div.userListArea").on("scroll", function(e) {
 			$(this).find("table#userListHeader").css("top", $(this).scrollTop() + "px");
 			$(this).find("table#userList tr:last-child > * ").css("border-bottom", "none");
+			if($(this).scrollTop() > 0) {
+				$(this).find("table#userListHeader").css("box-shadow", "0 0 5px rgba(0, 0, 0, 0.2)");
+			} else {
+				$(this).find("table#userListHeader").css("box-shadow", "unset");
+			}
 		});
 
 		$("input[name=userId]").on("keyup keydown change blur", function(e) {
@@ -461,12 +470,12 @@ strong.desc {
 	<div class="userListArea">
 		<table id="userListHeader" class="grid">
 			<colgroup>
-				<col style="width: 150px;" />
+				<col style="width: 100px;" />
 				<col style="width: 150px;" />
 				<col />
 				<col style="width: 200px;" />
-				<col style="width: 150px;" />
-				<col style="width: 150px;" />
+				<col style="width: 100px;" />
+				<col style="width: 100px;" />
 			</colgroup>
 			<thead>
 				<tr>
@@ -481,12 +490,12 @@ strong.desc {
 		</table>
 		<table id="userList" class="grid">
 			<colgroup>
-				<col style="width: 150px;" />
+				<col style="width: 100px;" />
 				<col style="width: 150px;" />
 				<col />
 				<col style="width: 200px;" />
-				<col style="width: 150px;" />
-				<col style="width: 150px;" />
+				<col style="width: 100px;" />
+				<col style="width: 100px;" />
 			</colgroup>
 			<tbody>
 			</tbody>
@@ -561,11 +570,11 @@ strong.desc {
 							</select> --%>
 							<input type="text" name="deptCd" data-required="부서" />
 							<div class="dialog tree" style="position:absolute; padding:20px; border:solid 1px #DDD; background:#FFF;">
-								<%-- <ul>
+								<ul>
 									<c:forEach items="${deptList}" var="dept">
 										<li>${dept.deptNm}</li>
 									</c:forEach>
-								</ul> --%>
+								</ul>
 							</div>
 							<!-- <script>$(".tree").fancytree();</script> -->
 						</td>

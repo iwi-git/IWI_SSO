@@ -6,9 +6,11 @@ public interface AuthService {
 
 	public IMap signinProc(IMap map) throws Exception;
 
-	public boolean validateToken() throws Exception;
+	public IMap signoutProc() throws Exception;
 
-	public boolean validateToken(String acsToken) throws Exception;
+	public IMap validateToken() throws Exception;
+
+	public IMap validateToken(String acsToken) throws Exception;
 
 	public IMap refreshToken() throws Exception;
 
